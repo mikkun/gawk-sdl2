@@ -1,0 +1,9 @@
+BasedOnStyle: WebKit
+AlignAfterOpenBracket: Align
+Language: Cpp
+PointerAlignment: Right
+SpaceAfterLogicalNot: true
+SpaceAroundPointerQualifiers: Before
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
