@@ -94,6 +94,43 @@ load_vars(void)
 
 /*----- Enable API ---------------------------------------------------------*/
 
+/* void Mix_Gawk_Linked_Version(const Uint8 *array); */
+// /* It doesn't exist in SDL2_mixer */
+/* do_Mix_Gawk_Linked_Version --- provide a Mix_Gawk_Linked_Version()
+                                  function for gawk */
+
+static awk_value_t *
+do_Mix_Gawk_Linked_Version(int nargs,
+                           awk_value_t *result,
+                           struct awk_ext_func *finfo)
+{
+    const SDL_version *link_version;
+    awk_value_t array_param;
+    awk_array_t array;
+    awk_value_t index, value;
+
+    if (! get_argument(0, AWK_ARRAY, &array_param)) {
+        warning(ext_id, _("Mix_Gawk_Linked_Version: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    array = array_param.array_cookie;
+
+    clear_array(array);
+
+    link_version = Mix_Linked_Version();
+    set_array_element(array,
+                      make_const_string("major", 5, &index),
+                      make_number(link_version->major, &value));
+    set_array_element(array,
+                      make_const_string("minor", 5, &index),
+                      make_number(link_version->minor, &value));
+    set_array_element(array,
+                      make_const_string("patch", 5, &index),
+                      make_number(link_version->patch, &value));
+    RETURN_OK;
+}
+
 /* int Mix_OpenAudio(int frequency,
                      Uint16 format,
                      int channels,
@@ -314,6 +351,10 @@ init_sdl2_mixer(void)
 }
 
 static awk_ext_func_t func_table[] = {
+    { "Mix_Gawk_Linked_Version", do_Mix_Gawk_Linked_Version,
+      1, 1,
+      awk_false,
+      NULL },
     { "Mix_OpenAudio", do_Mix_OpenAudio, 4, 4, awk_false, NULL },
     { "Mix_CloseAudio", do_Mix_CloseAudio, 0, 0, awk_false, NULL },
     { "Mix_LoadWAV", do_Mix_LoadWAV, 1, 1, awk_false, NULL },
