@@ -180,6 +180,37 @@ do_Mix_CloseAudio(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     RETURN_OK;
 }
 
+/* int Mix_Gawk_QuerySpec(int frequency, Uint16 format, int channels); */
+// /* It doesn't exist in SDL2_mixer */
+/* do_Mix_Gawk_QuerySpec --- provide a Mix_Gawk_QuerySpec()
+                             function for gawk */
+
+static awk_value_t *
+do_Mix_Gawk_QuerySpec(int nargs,
+                      awk_value_t *result,
+                      struct awk_ext_func *finfo)
+{
+    awk_value_t frequency_param;
+    awk_value_t format_param;
+    awk_value_t channels_param;
+    int frequency;
+    uint16_t format;
+    int channels;
+
+    if (! get_argument(0, AWK_NUMBER, &frequency_param)
+        || ! get_argument(1, AWK_NUMBER, &format_param)
+        || ! get_argument(2, AWK_NUMBER, &channels_param)) {
+        warning(ext_id, _("Mix_Gawk_QuerySpec: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    frequency = frequency_param.num_value;
+    format = format_param.num_value;
+    channels = channels_param.num_value;
+
+    return make_number(Mix_QuerySpec(&frequency, &format, &channels), result);
+}
+
 /*----- Read Sampling Audio from File or Memory ----------------------------*/
 
 /* Mix_Chunk *Mix_LoadWAV(const char *file); */
@@ -357,6 +388,7 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "Mix_OpenAudio", do_Mix_OpenAudio, 4, 4, awk_false, NULL },
     { "Mix_CloseAudio", do_Mix_CloseAudio, 0, 0, awk_false, NULL },
+    { "Mix_Gawk_QuerySpec", do_Mix_Gawk_QuerySpec, 3, 3, awk_false, NULL },
     { "Mix_LoadWAV", do_Mix_LoadWAV, 1, 1, awk_false, NULL },
     { "Mix_FreeChunk", do_Mix_FreeChunk, 1, 1, awk_false, NULL },
     { "Mix_PlayChannel", do_Mix_PlayChannelTimed, 3, 3, awk_false, NULL },
