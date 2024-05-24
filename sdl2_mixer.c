@@ -211,6 +211,23 @@ do_Mix_Gawk_QuerySpec(int nargs,
     return make_number(Mix_QuerySpec(&frequency, &format, &channels), result);
 }
 
+/* const char *Mix_GetError(void); */
+/* do_Mix_GetError --- provide a Mix_GetError() function for gawk */
+
+static awk_value_t *
+do_Mix_GetError(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    const char *errormsg;
+
+    errormsg = Mix_GetError();
+
+    if (errormsg)
+        return make_string_malloc(errormsg, strlen(errormsg), result);
+
+    update_ERRNO_string(_("Mix_GetError failed"));
+    return make_null_string(result);
+}
+
 /*----- Read Sampling Audio from File or Memory ----------------------------*/
 
 /* Mix_Chunk *Mix_LoadWAV(const char *file); */
@@ -389,6 +406,7 @@ static awk_ext_func_t func_table[] = {
     { "Mix_OpenAudio", do_Mix_OpenAudio, 4, 4, awk_false, NULL },
     { "Mix_CloseAudio", do_Mix_CloseAudio, 0, 0, awk_false, NULL },
     { "Mix_Gawk_QuerySpec", do_Mix_Gawk_QuerySpec, 3, 3, awk_false, NULL },
+    { "Mix_GetError", do_Mix_GetError, 0, 0, awk_false, NULL },
     { "Mix_LoadWAV", do_Mix_LoadWAV, 1, 1, awk_false, NULL },
     { "Mix_FreeChunk", do_Mix_FreeChunk, 1, 1, awk_false, NULL },
     { "Mix_PlayChannel", do_Mix_PlayChannelTimed, 3, 3, awk_false, NULL },
