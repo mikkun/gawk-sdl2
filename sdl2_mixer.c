@@ -282,6 +282,28 @@ do_Mix_FreeChunk(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
 
 /*----- Handle Channels for Sound Effects ----------------------------------*/
 
+/* int Mix_AllocateChannels(int numchans); */
+/* do_Mix_AllocateChannels --- provide a Mix_AllocateChannels()
+                               function for gawk */
+
+static awk_value_t *
+do_Mix_AllocateChannels(int nargs,
+                        awk_value_t *result,
+                        struct awk_ext_func *finfo)
+{
+    awk_value_t numchans_param;
+    int numchans;
+
+    if (! get_argument(0, AWK_NUMBER, &numchans_param)) {
+        warning(ext_id, _("Mix_AllocateChannels: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    numchans = numchans_param.num_value;
+
+    return make_number(Mix_AllocateChannels(numchans), result);
+}
+
 /* int Mix_PlayChannelTimed(int channel,
                             Mix_Chunk *chunk,
                             int loops,
@@ -409,6 +431,10 @@ static awk_ext_func_t func_table[] = {
     { "Mix_GetError", do_Mix_GetError, 0, 0, awk_false, NULL },
     { "Mix_LoadWAV", do_Mix_LoadWAV, 1, 1, awk_false, NULL },
     { "Mix_FreeChunk", do_Mix_FreeChunk, 1, 1, awk_false, NULL },
+    { "Mix_AllocateChannels", do_Mix_AllocateChannels,
+      1, 1,
+      awk_false,
+      NULL },
     { "Mix_PlayChannel", do_Mix_PlayChannelTimed, 3, 3, awk_false, NULL },
     { "Mix_PlayChannelTimed", do_Mix_PlayChannelTimed,
       4, 4,
