@@ -377,6 +377,25 @@ do_Mix_HaltChannel(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     return make_number(ret, result);
 }
 
+/* int Mix_Playing(int channel); */
+/* do_Mix_Playing --- provide a Mix_Playing() function for gawk */
+
+static awk_value_t *
+do_Mix_Playing(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t channel_param;
+    int channel;
+
+    if (! get_argument(0, AWK_NUMBER, &channel_param)) {
+        warning(ext_id, _("Mix_Playing: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    channel = channel_param.num_value;
+
+    return make_number(Mix_Playing(channel), result);
+}
+
 /*----- Handle Effects -----------------------------------------------------*/
 
 /* int Mix_SetPanning(int channel, Uint8 left, Uint8 right); */
@@ -441,6 +460,7 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "Mix_HaltChannel", do_Mix_HaltChannel, 1, 1, awk_false, NULL },
+    { "Mix_Playing", do_Mix_Playing, 1, 1, awk_false, NULL },
     { "Mix_SetPanning", do_Mix_SetPanning, 3, 3, awk_false, NULL },
 };
 
