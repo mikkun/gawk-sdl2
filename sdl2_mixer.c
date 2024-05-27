@@ -428,6 +428,26 @@ do_Mix_LoadMUS(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     return make_null_string(result);
 }
 
+/* void Mix_FreeMusic(Mix_Music *music); */
+/* do_Mix_FreeMusic --- provide a Mix_FreeMusic() function for gawk */
+
+static awk_value_t *
+do_Mix_FreeMusic(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t music_ptr_param;
+    uintptr_t music_ptr;
+
+    if (! get_argument(0, AWK_STRING, &music_ptr_param)) {
+        warning(ext_id, _("Mix_FreeMusic: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    music_ptr = strtoull(music_ptr_param.str_value.str, (char **)NULL, 16);
+
+    Mix_FreeMusic((Mix_Music *)music_ptr);
+    RETURN_OK;
+}
+
 /*----- Handle Effects -----------------------------------------------------*/
 
 /* int Mix_SetPanning(int channel, Uint8 left, Uint8 right); */
@@ -494,6 +514,7 @@ static awk_ext_func_t func_table[] = {
     { "Mix_HaltChannel", do_Mix_HaltChannel, 1, 1, awk_false, NULL },
     { "Mix_Playing", do_Mix_Playing, 1, 1, awk_false, NULL },
     { "Mix_LoadMUS", do_Mix_LoadMUS, 1, 1, awk_false, NULL },
+    { "Mix_FreeMusic", do_Mix_FreeMusic, 1, 1, awk_false, NULL },
     { "Mix_SetPanning", do_Mix_SetPanning, 3, 3, awk_false, NULL },
 };
 
