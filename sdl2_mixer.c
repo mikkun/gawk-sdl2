@@ -495,6 +495,33 @@ do_Mix_VolumeMusic(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     return make_number(Mix_VolumeMusic(volume), result);
 }
 
+/* int Mix_SetMusicPosition(double position); */
+/* do_Mix_SetMusicPosition --- provide a Mix_SetMusicPosition()
+                               function for gawk */
+
+static awk_value_t *
+do_Mix_SetMusicPosition(int nargs,
+                        awk_value_t *result,
+                        struct awk_ext_func *finfo)
+{
+    awk_value_t position_param;
+    double position;
+    int ret;
+
+    if (! get_argument(0, AWK_NUMBER, &position_param)) {
+        warning(ext_id, _("Mix_SetMusicPosition: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    position = position_param.num_value;
+
+    ret = Mix_SetMusicPosition(position);
+    if (ret < 0)
+        update_ERRNO_string(_("Mix_SetMusicPosition failed"));
+
+    return make_number(ret, result);
+}
+
 /*----- Handle Effects -----------------------------------------------------*/
 
 /* int Mix_SetPanning(int channel, Uint8 left, Uint8 right); */
@@ -564,6 +591,10 @@ static awk_ext_func_t func_table[] = {
     { "Mix_FreeMusic", do_Mix_FreeMusic, 1, 1, awk_false, NULL },
     { "Mix_PlayMusic", do_Mix_PlayMusic, 2, 2, awk_false, NULL },
     { "Mix_VolumeMusic", do_Mix_VolumeMusic, 1, 1, awk_false, NULL },
+    { "Mix_SetMusicPosition", do_Mix_SetMusicPosition,
+      1, 1,
+      awk_false,
+      NULL },
     { "Mix_SetPanning", do_Mix_SetPanning, 3, 3, awk_false, NULL },
 };
 
