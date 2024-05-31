@@ -555,6 +555,17 @@ do_Mix_HaltMusic(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     return make_number(Mix_HaltMusic(), result);
 }
 
+/* int Mix_PlayingMusic(void); */
+/* do_Mix_PlayingMusic --- provide a Mix_PlayingMusic() function for gawk */
+
+static awk_value_t *
+do_Mix_PlayingMusic(int nargs,
+                    awk_value_t *result,
+                    struct awk_ext_func *finfo)
+{
+    return make_number(Mix_PlayingMusic(), result);
+}
+
 /*----- Handle Effects -----------------------------------------------------*/
 
 /* int Mix_SetPanning(int channel, Uint8 left, Uint8 right); */
@@ -630,6 +641,7 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "Mix_SetMusicCMD", do_Mix_SetMusicCMD, 1, 1, awk_false, NULL },
     { "Mix_HaltMusic", do_Mix_HaltMusic, 0, 0, awk_false, NULL },
+    { "Mix_PlayingMusic", do_Mix_PlayingMusic, 0, 0, awk_false, NULL },
     { "Mix_SetPanning", do_Mix_SetPanning, 3, 3, awk_false, NULL },
 };
 
