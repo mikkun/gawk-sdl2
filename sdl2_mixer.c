@@ -51,6 +51,9 @@ static awk_scalar_t AUDIO_S16SYS_node;
 static awk_scalar_t AUDIO_S32SYS_node;
 static awk_scalar_t AUDIO_F32SYS_node;
 
+/* Handle Channels for Sound Effects */
+static awk_scalar_t MIX_CHANNEL_POST_node;
+
 struct varinit {
     awk_scalar_t *spec;
     const char *name;
@@ -70,6 +73,7 @@ static const struct varinit varinit[] = {
     ENTRY(AUDIO_S16SYS, 1),
     ENTRY(AUDIO_S32SYS, 1),
     ENTRY(AUDIO_F32SYS, 1),
+    ENTRY(MIX_CHANNEL_POST, 1),
 };
 
 /* load_vars --- load constant variables */
@@ -598,6 +602,34 @@ do_Mix_SetPanning(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     return make_number(ret, result);
 }
 
+/* int Mix_SetDistance(int channel, Uint8 distance); */
+/* do_Mix_SetDistance --- provide a Mix_SetDistance() function for gawk */
+
+static awk_value_t *
+do_Mix_SetDistance(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t channel_param;
+    awk_value_t distance_param;
+    int channel;
+    uint8_t distance;
+    int ret;
+
+    if (! get_argument(0, AWK_NUMBER, &channel_param)
+        || ! get_argument(1, AWK_NUMBER, &distance_param)) {
+        warning(ext_id, _("Mix_SetDistance: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    channel = channel_param.num_value;
+    distance = distance_param.num_value;
+
+    ret = Mix_SetDistance(channel, distance);
+    if (ret == 0)
+        update_ERRNO_string(_("Mix_SetDistance failed"));
+
+    return make_number(ret, result);
+}
+
 /*--------------------------------------------------------------------------*/
 
 /* init_sdl2_mixer --- initialization routine */
@@ -643,6 +675,7 @@ static awk_ext_func_t func_table[] = {
     { "Mix_HaltMusic", do_Mix_HaltMusic, 0, 0, awk_false, NULL },
     { "Mix_PlayingMusic", do_Mix_PlayingMusic, 0, 0, awk_false, NULL },
     { "Mix_SetPanning", do_Mix_SetPanning, 3, 3, awk_false, NULL },
+    { "Mix_SetDistance", do_Mix_SetDistance, 2, 2, awk_false, NULL },
 };
 
 /* define the dl_load() function using the boilerplate macro */
