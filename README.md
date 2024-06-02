@@ -109,14 +109,30 @@ See `examples/*.awk` for usage.
 
 ### SDL_mixer 2.0
 
+- `Mix_AllocateChannels`
 - `Mix_CloseAudio`
 - `Mix_FreeChunk`
+- `Mix_FreeMusic`
+- `Mix_Gawk_Linked_Version`
+- `Mix_Gawk_QuerySpec`
+- `Mix_GetError`
 - `Mix_HaltChannel`
+- `Mix_HaltMusic`
+- `Mix_LoadMUS`
 - `Mix_LoadWAV`
 - `Mix_OpenAudio`
 - `Mix_PlayChannelTimed`
 - `Mix_PlayChannel`
+- `Mix_PlayMusic`
+- `Mix_PlayingMusic`
+- `Mix_Playing`
+- `Mix_SetDistance`
+- `Mix_SetMusicCMD`
+- `Mix_SetMusicPosition`
 - `Mix_SetPanning`
+- `Mix_SetPosition`
+- `Mix_SetReverseStereo`
+- `Mix_VolumeMusic`
 
 ## TODO
 

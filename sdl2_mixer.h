@@ -16,6 +16,9 @@
 #define DEFAULT_AUDIO_S32SYS AUDIO_S32SYS
 #define DEFAULT_AUDIO_F32SYS AUDIO_F32SYS
 
+/* Handle Channels for Sound Effects */
+#define DEFAULT_MIX_CHANNEL_POST MIX_CHANNEL_POST
+
 #define ENTRY(VAR, CONST)                       \
     {                                           \
         &VAR##_node, #VAR, DEFAULT_##VAR, CONST \
