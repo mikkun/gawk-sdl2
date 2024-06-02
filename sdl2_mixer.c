@@ -662,6 +662,37 @@ do_Mix_SetPosition(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     return make_number(ret, result);
 }
 
+/* int Mix_SetReverseStereo(int channel, int flip); */
+/* do_Mix_SetReverseStereo --- provide a Mix_SetReverseStereo()
+                               function for gawk */
+
+static awk_value_t *
+do_Mix_SetReverseStereo(int nargs,
+                        awk_value_t *result,
+                        struct awk_ext_func *finfo)
+{
+    awk_value_t channel_param;
+    awk_value_t flip_param;
+    int channel;
+    int flip;
+    int ret;
+
+    if (! get_argument(0, AWK_NUMBER, &channel_param)
+        || ! get_argument(1, AWK_NUMBER, &flip_param)) {
+        warning(ext_id, _("Mix_SetReverseStereo: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    channel = channel_param.num_value;
+    flip = flip_param.num_value;
+
+    ret = Mix_SetReverseStereo(channel, flip);
+    if (ret == 0)
+        update_ERRNO_string(_("Mix_SetReverseStereo failed"));
+
+    return make_number(ret, result);
+}
+
 /*--------------------------------------------------------------------------*/
 
 /* init_sdl2_mixer --- initialization routine */
@@ -709,6 +740,10 @@ static awk_ext_func_t func_table[] = {
     { "Mix_SetPanning", do_Mix_SetPanning, 3, 3, awk_false, NULL },
     { "Mix_SetDistance", do_Mix_SetDistance, 2, 2, awk_false, NULL },
     { "Mix_SetPosition", do_Mix_SetPosition, 3, 3, awk_false, NULL },
+    { "Mix_SetReverseStereo", do_Mix_SetReverseStereo,
+      2, 2,
+      awk_false,
+      NULL },
 };
 
 /* define the dl_load() function using the boilerplate macro */
