@@ -98,7 +98,7 @@ load_vars(void)
 
 /*----- Enable API ---------------------------------------------------------*/
 
-/* void Mix_Gawk_Linked_Version(const Uint8 *array); */
+/* void Mix_Gawk_Linked_Version(awk_array_t *array); */
 // /* It doesn't exist in SDL2_mixer */
 /* do_Mix_Gawk_Linked_Version --- provide a Mix_Gawk_Linked_Version()
                                   function for gawk */

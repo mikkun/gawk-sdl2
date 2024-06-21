@@ -2046,7 +2046,7 @@ do_SDL_PollEvent(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
 
 /*----- Keyboard Support ---------------------------------------------------*/
 
-/* void SDL_Gawk_GetKeyboardState(int *numkeys, const Uint8 *array); */
+/* void SDL_Gawk_GetKeyboardState(int *numkeys, awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
 /* do_SDL_Gawk_GetKeyboardState --- provide a SDL_Gawk_GetKeyboardState()
                                     function for gawk */
