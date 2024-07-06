@@ -1934,6 +1934,90 @@ do_SDL_CreateRGBSurface(int nargs,
     return make_null_string(result);
 }
 
+/* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_SurfaceToArray --- provide a SDL_Gawk_SurfaceToArray()
+                                  function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_SurfaceToArray(int nargs,
+                           awk_value_t *result,
+                           struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    awk_value_t array_param;
+    uintptr_t surface_ptr;
+    awk_array_t array;
+    SDL_Surface *surface;
+    char format_addr[20];
+    char pixels_addr[20];
+    char userdata_addr[20];
+    awk_value_t index, value;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
+        || ! get_argument(1, AWK_ARRAY, &array_param)) {
+        warning(ext_id, _("SDL_Gawk_SurfaceToArray: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+    array = array_param.array_cookie;
+
+    if (! surface_ptr) {
+        warning(ext_id, _("SDL_Gawk_SurfaceToArray: invalid surface"));
+        RETURN_NOK;
+    }
+
+    surface = (SDL_Surface *)surface_ptr;
+    // NOLINTBEGIN
+    snprintf(format_addr, sizeof(format_addr), "%p", surface->format);
+    snprintf(pixels_addr, sizeof(pixels_addr), "%p", surface->pixels);
+    snprintf(userdata_addr, sizeof(userdata_addr), "%p", surface->userdata);
+    // NOLINTEND
+
+    clear_array(array);
+
+    set_array_element(array,
+                      make_const_string("format", 6, &index),
+                      make_const_string(format_addr, strlen(format_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("w", 1, &index),
+                      make_number(surface->w, &value));
+    set_array_element(array,
+                      make_const_string("h", 1, &index),
+                      make_number(surface->h, &value));
+    set_array_element(array,
+                      make_const_string("pitch", 5, &index),
+                      make_number(surface->pitch, &value));
+    set_array_element(array,
+                      make_const_string("pixels", 6, &index),
+                      make_const_string(pixels_addr, strlen(pixels_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("userdata", 8, &index),
+                      make_const_string(userdata_addr, strlen(userdata_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.x", 11, &index),
+                      make_number(surface->clip_rect.x, &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.y", 11, &index),
+                      make_number(surface->clip_rect.y, &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.w", 11, &index),
+                      make_number(surface->clip_rect.w, &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.h", 11, &index),
+                      make_number(surface->clip_rect.h, &value));
+    set_array_element(array,
+                      make_const_string("refcount", 8, &index),
+                      make_number(surface->refcount, &value));
+    RETURN_OK;
+}
+
 /* int SDL_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color); */
 /* do_SDL_FillRect --- provide a SDL_FillRect() function for gawk */
 
@@ -2218,6 +2302,10 @@ static awk_ext_func_t func_table[] = {
     { "SDL_BlitSurface", do_SDL_BlitSurface, 4, 4, awk_false, NULL },
     { "SDL_CreateRGBSurface", do_SDL_CreateRGBSurface,
       8, 8,
+      awk_false,
+      NULL },
+    { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
+      2, 2,
       awk_false,
       NULL },
     { "SDL_FillRect", do_SDL_FillRect, 3, 3, awk_false, NULL },
