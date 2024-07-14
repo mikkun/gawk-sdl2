@@ -1672,6 +1672,77 @@ do_SDL_SetPaletteColors(int nargs,
     return make_number(ret, result);
 }
 
+/* void SDL_Gawk_PixelFormatToArray(SDL_PixelFormat *fmt,
+                                    awk_array_t *array); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_PixelFormatToArray --- provide a SDL_Gawk_PixelFormatToArray()
+                                      function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_PixelFormatToArray(int nargs,
+                               awk_value_t *result,
+                               struct awk_ext_func *finfo)
+{
+    awk_value_t fmt_ptr_param;
+    awk_value_t array_param;
+    uintptr_t fmt_ptr;
+    awk_array_t array;
+    SDL_PixelFormat *fmt;
+    char palette_addr[20];
+    awk_value_t index, value;
+
+    if (! get_argument(0, AWK_STRING, &fmt_ptr_param)
+        || ! get_argument(1, AWK_ARRAY, &array_param)) {
+        warning(ext_id, _("SDL_Gawk_PixelFormatToArray: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    fmt_ptr = strtoull(fmt_ptr_param.str_value.str,
+                       (char **)NULL,
+                       16);
+    array = array_param.array_cookie;
+
+    if (! fmt_ptr) {
+        warning(ext_id,
+                _("SDL_Gawk_PixelFormatToArray: invalid pixel format"));
+        RETURN_NOK;
+    }
+
+    fmt = (SDL_PixelFormat *)fmt_ptr;
+    // NOLINTBEGIN
+    snprintf(palette_addr, sizeof(palette_addr), "%p", fmt->palette);
+    // NOLINTEND
+
+    clear_array(array);
+
+    set_array_element(array,
+                      make_const_string("format", 6, &index),
+                      make_number(fmt->format, &value));
+    set_array_element(array,
+                      make_const_string("palette", 7, &index),
+                      make_const_string(palette_addr, strlen(palette_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("BitsPerPixel", 12, &index),
+                      make_number(fmt->BitsPerPixel, &value));
+    set_array_element(array,
+                      make_const_string("BytesPerPixel", 13, &index),
+                      make_number(fmt->BytesPerPixel, &value));
+    set_array_element(array,
+                      make_const_string("Rmask", 5, &index),
+                      make_number(fmt->Rmask, &value));
+    set_array_element(array,
+                      make_const_string("Gmask", 5, &index),
+                      make_number(fmt->Gmask, &value));
+    set_array_element(array,
+                      make_const_string("Bmask", 5, &index),
+                      make_number(fmt->Bmask, &value));
+    set_array_element(array,
+                      make_const_string("Amask", 5, &index),
+                      make_number(fmt->Amask, &value));
+    RETURN_OK;
+}
+
 /* SDL_bool SDL_PixelFormatEnumToMasks(Uint32 format,
                                        int *bpp,
                                        Uint32 *Rmask,
@@ -1932,6 +2003,90 @@ do_SDL_CreateRGBSurface(int nargs,
 
     update_ERRNO_string(_("SDL_CreateRGBSurface failed"));
     return make_null_string(result);
+}
+
+/* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_SurfaceToArray --- provide a SDL_Gawk_SurfaceToArray()
+                                  function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_SurfaceToArray(int nargs,
+                           awk_value_t *result,
+                           struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    awk_value_t array_param;
+    uintptr_t surface_ptr;
+    awk_array_t array;
+    SDL_Surface *surface;
+    char format_addr[20];
+    char pixels_addr[20];
+    char userdata_addr[20];
+    awk_value_t index, value;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
+        || ! get_argument(1, AWK_ARRAY, &array_param)) {
+        warning(ext_id, _("SDL_Gawk_SurfaceToArray: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+    array = array_param.array_cookie;
+
+    if (! surface_ptr) {
+        warning(ext_id, _("SDL_Gawk_SurfaceToArray: invalid surface"));
+        RETURN_NOK;
+    }
+
+    surface = (SDL_Surface *)surface_ptr;
+    // NOLINTBEGIN
+    snprintf(format_addr, sizeof(format_addr), "%p", surface->format);
+    snprintf(pixels_addr, sizeof(pixels_addr), "%p", surface->pixels);
+    snprintf(userdata_addr, sizeof(userdata_addr), "%p", surface->userdata);
+    // NOLINTEND
+
+    clear_array(array);
+
+    set_array_element(array,
+                      make_const_string("format", 6, &index),
+                      make_const_string(format_addr, strlen(format_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("w", 1, &index),
+                      make_number(surface->w, &value));
+    set_array_element(array,
+                      make_const_string("h", 1, &index),
+                      make_number(surface->h, &value));
+    set_array_element(array,
+                      make_const_string("pitch", 5, &index),
+                      make_number(surface->pitch, &value));
+    set_array_element(array,
+                      make_const_string("pixels", 6, &index),
+                      make_const_string(pixels_addr, strlen(pixels_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("userdata", 8, &index),
+                      make_const_string(userdata_addr, strlen(userdata_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.x", 11, &index),
+                      make_number(surface->clip_rect.x, &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.y", 11, &index),
+                      make_number(surface->clip_rect.y, &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.w", 11, &index),
+                      make_number(surface->clip_rect.w, &value));
+    set_array_element(array,
+                      make_const_string("clip_rect.h", 11, &index),
+                      make_number(surface->clip_rect.h, &value));
+    set_array_element(array,
+                      make_const_string("refcount", 8, &index),
+                      make_number(surface->refcount, &value));
+    RETURN_OK;
 }
 
 /* int SDL_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color); */
@@ -2208,6 +2363,10 @@ static awk_ext_func_t func_table[] = {
       4, 4,
       awk_false,
       NULL },
+    { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
+      2, 2,
+      awk_false,
+      NULL },
     { "SDL_PixelFormatEnumToMasks", do_SDL_PixelFormatEnumToMasks,
       6, 6,
       awk_false,
@@ -2218,6 +2377,10 @@ static awk_ext_func_t func_table[] = {
     { "SDL_BlitSurface", do_SDL_BlitSurface, 4, 4, awk_false, NULL },
     { "SDL_CreateRGBSurface", do_SDL_CreateRGBSurface,
       8, 8,
+      awk_false,
+      NULL },
+    { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
+      2, 2,
       awk_false,
       NULL },
     { "SDL_FillRect", do_SDL_FillRect, 3, 3, awk_false, NULL },
