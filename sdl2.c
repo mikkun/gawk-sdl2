@@ -1672,6 +1672,77 @@ do_SDL_SetPaletteColors(int nargs,
     return make_number(ret, result);
 }
 
+/* void SDL_Gawk_PixelFormatToArray(SDL_PixelFormat *fmt,
+                                    awk_array_t *array); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_PixelFormatToArray --- provide a SDL_Gawk_PixelFormatToArray()
+                                      function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_PixelFormatToArray(int nargs,
+                               awk_value_t *result,
+                               struct awk_ext_func *finfo)
+{
+    awk_value_t fmt_ptr_param;
+    awk_value_t array_param;
+    uintptr_t fmt_ptr;
+    awk_array_t array;
+    SDL_PixelFormat *fmt;
+    char palette_addr[20];
+    awk_value_t index, value;
+
+    if (! get_argument(0, AWK_STRING, &fmt_ptr_param)
+        || ! get_argument(1, AWK_ARRAY, &array_param)) {
+        warning(ext_id, _("SDL_Gawk_PixelFormatToArray: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    fmt_ptr = strtoull(fmt_ptr_param.str_value.str,
+                       (char **)NULL,
+                       16);
+    array = array_param.array_cookie;
+
+    if (! fmt_ptr) {
+        warning(ext_id,
+                _("SDL_Gawk_PixelFormatToArray: invalid pixel format"));
+        RETURN_NOK;
+    }
+
+    fmt = (SDL_PixelFormat *)fmt_ptr;
+    // NOLINTBEGIN
+    snprintf(palette_addr, sizeof(palette_addr), "%p", fmt->palette);
+    // NOLINTEND
+
+    clear_array(array);
+
+    set_array_element(array,
+                      make_const_string("format", 6, &index),
+                      make_number(fmt->format, &value));
+    set_array_element(array,
+                      make_const_string("palette", 7, &index),
+                      make_const_string(palette_addr, strlen(palette_addr),
+                                        &value));
+    set_array_element(array,
+                      make_const_string("BitsPerPixel", 12, &index),
+                      make_number(fmt->BitsPerPixel, &value));
+    set_array_element(array,
+                      make_const_string("BytesPerPixel", 13, &index),
+                      make_number(fmt->BytesPerPixel, &value));
+    set_array_element(array,
+                      make_const_string("Rmask", 5, &index),
+                      make_number(fmt->Rmask, &value));
+    set_array_element(array,
+                      make_const_string("Gmask", 5, &index),
+                      make_number(fmt->Gmask, &value));
+    set_array_element(array,
+                      make_const_string("Bmask", 5, &index),
+                      make_number(fmt->Bmask, &value));
+    set_array_element(array,
+                      make_const_string("Amask", 5, &index),
+                      make_number(fmt->Amask, &value));
+    RETURN_OK;
+}
+
 /* SDL_bool SDL_PixelFormatEnumToMasks(Uint32 format,
                                        int *bpp,
                                        Uint32 *Rmask,
@@ -2290,6 +2361,10 @@ static awk_ext_func_t func_table[] = {
     { "SDL_UpdateTexture", do_SDL_UpdateTexture, 4, 4, awk_false, NULL },
     { "SDL_SetPaletteColors", do_SDL_SetPaletteColors,
       4, 4,
+      awk_false,
+      NULL },
+    { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
+      2, 2,
       awk_false,
       NULL },
     { "SDL_PixelFormatEnumToMasks", do_SDL_PixelFormatEnumToMasks,
