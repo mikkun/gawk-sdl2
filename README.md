@@ -83,6 +83,8 @@ See `examples/*.awk` for usage.
 - `SDL_Gawk_CreateRect`
 - `SDL_Gawk_GetEventType`
 - `SDL_Gawk_GetKeyboardState`
+- `SDL_Gawk_PixelFormatToArray`
+- `SDL_Gawk_SurfaceToArray`
 - `SDL_Gawk_UpdateRect`
 - `SDL_GetError`
 - `SDL_GetTicks`
