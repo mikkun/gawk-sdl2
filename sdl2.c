@@ -1659,6 +1659,28 @@ do_SDL_AllocPalette(int nargs,
     return make_null_string(result);
 }
 
+/* void SDL_FreePalette(SDL_Palette *palette); */
+/* do_SDL_FreePalette --- provide a SDL_FreePalette() function for gawk */
+
+static awk_value_t *
+do_SDL_FreePalette(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t palette_ptr_param;
+    uintptr_t palette_ptr;
+
+    if (! get_argument(0, AWK_STRING, &palette_ptr_param)) {
+        warning(ext_id, _("SDL_FreePalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    palette_ptr = strtoull(palette_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    SDL_FreePalette((SDL_Palette *)palette_ptr);
+    RETURN_OK;
+}
+
 /* int SDL_SetPaletteColors(SDL_Palette *palette,
                             const SDL_Color *colors,
                             int firstcolor, int ncolors); */
@@ -2392,6 +2414,7 @@ static awk_ext_func_t func_table[] = {
     { "SDL_DestroyTexture", do_SDL_DestroyTexture, 1, 1, awk_false, NULL },
     { "SDL_UpdateTexture", do_SDL_UpdateTexture, 4, 4, awk_false, NULL },
     { "SDL_AllocPalette", do_SDL_AllocPalette, 1, 1, awk_false, NULL },
+    { "SDL_FreePalette", do_SDL_FreePalette, 1, 1, awk_false, NULL },
     { "SDL_SetPaletteColors", do_SDL_SetPaletteColors,
       4, 4,
       awk_false,
