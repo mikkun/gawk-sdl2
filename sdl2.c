@@ -2143,6 +2143,42 @@ do_SDL_Gawk_SurfaceToArray(int nargs,
     RETURN_OK;
 }
 
+/* int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette); */
+/* do_SDL_SetSurfacePalette --- provide a SDL_SetSurfacePalette()
+                                function for gawk */
+
+static awk_value_t *
+do_SDL_SetSurfacePalette(int nargs,
+                         awk_value_t *result,
+                         struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    awk_value_t palette_ptr_param;
+    uintptr_t surface_ptr;
+    uintptr_t palette_ptr;
+    int ret;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
+        || ! get_argument(1, AWK_STRING, &palette_ptr_param)) {
+        warning(ext_id, _("SDL_SetSurfacePalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+    palette_ptr = strtoull(palette_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    ret = SDL_SetSurfacePalette((SDL_Surface *)surface_ptr,
+                                (SDL_Palette *)palette_ptr);
+    if (ret < 0)
+        update_ERRNO_string(_("SDL_SetSurfacePalette failed"));
+
+    return make_number(ret, result);
+}
+
 /* int SDL_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color); */
 /* do_SDL_FillRect --- provide a SDL_FillRect() function for gawk */
 
@@ -2436,6 +2472,10 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
+      2, 2,
+      awk_false,
+      NULL },
+    { "SDL_SetSurfacePalette", do_SDL_SetSurfacePalette,
       2, 2,
       awk_false,
       NULL },
