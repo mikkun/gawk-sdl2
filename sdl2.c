@@ -1852,15 +1852,15 @@ do_SDL_PixelFormatEnumToMasks(int nargs,
 
 /*----- Rectangle Functions ------------------------------------------------*/
 
-/* SDL_Rect *SDL_Gawk_CreateRect(void); */
+/* SDL_Rect *SDL_Gawk_AllocRect(void); */
 // /* It doesn't exist in SDL2 */
-/* do_SDL_Gawk_CreateRect --- provide a SDL_Gawk_CreateRect()
-                              function for gawk */
+/* do_SDL_Gawk_AllocRect --- provide a SDL_Gawk_AllocRect()
+                             function for gawk */
 
 static awk_value_t *
-do_SDL_Gawk_CreateRect(int nargs,
-                       awk_value_t *result,
-                       struct awk_ext_func *finfo)
+do_SDL_Gawk_AllocRect(int nargs,
+                      awk_value_t *result,
+                      struct awk_ext_func *finfo)
 {
     SDL_Rect *rect;
 
@@ -1873,7 +1873,7 @@ do_SDL_Gawk_CreateRect(int nargs,
         return make_string_malloc(rect_addr, strlen(rect_addr), result);
     }
 
-    update_ERRNO_string(_("SDL_Gawk_CreateRect failed"));
+    update_ERRNO_string(_("SDL_Gawk_AllocRect failed"));
     return make_null_string(result);
 }
 
@@ -2463,7 +2463,7 @@ static awk_ext_func_t func_table[] = {
       6, 6,
       awk_false,
       NULL },
-    { "SDL_Gawk_CreateRect", do_SDL_Gawk_CreateRect, 0, 0, awk_false, NULL },
+    { "SDL_Gawk_AllocRect", do_SDL_Gawk_AllocRect, 0, 0, awk_false, NULL },
     { "SDL_Gawk_UpdateRect", do_SDL_Gawk_UpdateRect, 5, 5, awk_false, NULL },
     { "SDL_HasIntersection", do_SDL_HasIntersection, 2, 2, awk_false, NULL },
     { "SDL_BlitSurface", do_SDL_BlitSurface, 4, 4, awk_false, NULL },
