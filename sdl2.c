@@ -2215,15 +2215,15 @@ do_SDL_FillRect(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
 
 /*----- Event Handling -----------------------------------------------------*/
 
-/* SDL_Event *SDL_Gawk_CreateEvent(void); */
+/* SDL_Event *SDL_Gawk_AllocEvent(void); */
 // /* It doesn't exist in SDL2 */
-/* do_SDL_Gawk_CreateEvent --- provide a SDL_Gawk_CreateEvent()
-                               function for gawk */
+/* do_SDL_Gawk_AllocEvent --- provide a SDL_Gawk_AllocEvent()
+                              function for gawk */
 
 static awk_value_t *
-do_SDL_Gawk_CreateEvent(int nargs,
-                        awk_value_t *result,
-                        struct awk_ext_func *finfo)
+do_SDL_Gawk_AllocEvent(int nargs,
+                       awk_value_t *result,
+                       struct awk_ext_func *finfo)
 {
     SDL_Event *event;
 
@@ -2236,7 +2236,7 @@ do_SDL_Gawk_CreateEvent(int nargs,
         return make_string_malloc(event_addr, strlen(event_addr), result);
     }
 
-    update_ERRNO_string(_("SDL_Gawk_CreateEvent failed"));
+    update_ERRNO_string(_("SDL_Gawk_AllocEvent failed"));
     return make_null_string(result);
 }
 
@@ -2480,10 +2480,7 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_FillRect", do_SDL_FillRect, 3, 3, awk_false, NULL },
-    { "SDL_Gawk_CreateEvent", do_SDL_Gawk_CreateEvent,
-      0, 0,
-      awk_false,
-      NULL },
+    { "SDL_Gawk_AllocEvent", do_SDL_Gawk_AllocEvent, 0, 0, awk_false, NULL },
     { "SDL_Gawk_GetEventType", do_SDL_Gawk_GetEventType,
       1, 1,
       awk_false,
