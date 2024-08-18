@@ -2113,6 +2113,60 @@ do_SDL_CreateRGBSurface(int nargs,
     return make_null_string(result);
 }
 
+/* SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags,
+                                               int width, int height,
+                                               int depth,
+                                               Uint32 format); */
+/* do_SDL_CreateRGBSurfaceWithFormat --- provide a
+                                         SDL_CreateRGBSurfaceWithFormat()
+                                         function for gawk */
+
+static awk_value_t *
+do_SDL_CreateRGBSurfaceWithFormat(int nargs,
+                                  awk_value_t *result,
+                                  struct awk_ext_func *finfo)
+{
+    SDL_Surface *surface;
+    awk_value_t flags_param;
+    awk_value_t width_param, height_param;
+    awk_value_t depth_param;
+    awk_value_t format_param;
+    uint32_t flags;
+    int width, height;
+    int depth;
+    uint32_t format;
+
+    if (! get_argument(0, AWK_NUMBER, &flags_param)
+        || ! get_argument(1, AWK_NUMBER, &width_param)
+        || ! get_argument(2, AWK_NUMBER, &height_param)
+        || ! get_argument(3, AWK_NUMBER, &depth_param)
+        || ! get_argument(4, AWK_NUMBER, &format_param)) {
+        warning(ext_id, _("SDL_CreateRGBSurfaceWithFormat: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    flags = flags_param.num_value;
+    width = width_param.num_value;
+    height = height_param.num_value;
+    depth = depth_param.num_value;
+    format = format_param.num_value;
+
+    surface = SDL_CreateRGBSurfaceWithFormat(flags,
+                                             width, height,
+                                             depth,
+                                             format);
+
+    if (surface) {
+        char surface_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(surface_addr, sizeof(surface_addr), "%p", surface);
+        return make_string_malloc(surface_addr, strlen(surface_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_CreateRGBSurfaceWithFormat failed"));
+    return make_null_string(result);
+}
+
 /* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
 /* do_SDL_Gawk_SurfaceToArray --- provide a SDL_Gawk_SurfaceToArray()
@@ -2525,6 +2579,10 @@ static awk_ext_func_t func_table[] = {
     { "SDL_BlitSurface", do_SDL_BlitSurface, 4, 4, awk_false, NULL },
     { "SDL_CreateRGBSurface", do_SDL_CreateRGBSurface,
       8, 8,
+      awk_false,
+      NULL },
+    { "SDL_CreateRGBSurfaceWithFormat", do_SDL_CreateRGBSurfaceWithFormat,
+      5, 5,
       awk_false,
       NULL },
     { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
