@@ -1726,6 +1726,38 @@ do_SDL_SetPaletteColors(int nargs,
     return make_number(ret, result);
 }
 
+/* SDL_PixelFormat *SDL_AllocFormat(Uint32 pixel_format); */
+/* do_SDL_AllocFormat --- provide a SDL_AllocFormat() function for gawk */
+
+static awk_value_t *
+do_SDL_AllocFormat(int nargs,
+                   awk_value_t *result,
+                   struct awk_ext_func *finfo)
+{
+    SDL_PixelFormat *format;
+    awk_value_t pixel_format_param;
+    uint32_t pixel_format;
+
+    if (! get_argument(0, AWK_NUMBER, &pixel_format_param)) {
+        warning(ext_id, _("SDL_AllocFormat: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    pixel_format = pixel_format_param.num_value;
+
+    format = SDL_AllocFormat(pixel_format);
+
+    if (format) {
+        char format_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(format_addr, sizeof(format_addr), "%p", format);
+        return make_string_malloc(format_addr, strlen(format_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_AllocFormat failed"));
+    return make_null_string(result);
+}
+
 /* void SDL_Gawk_PixelFormatToArray(SDL_PixelFormat *fmt,
                                     awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
@@ -2455,6 +2487,7 @@ static awk_ext_func_t func_table[] = {
       4, 4,
       awk_false,
       NULL },
+    { "SDL_AllocFormat", do_SDL_AllocFormat, 1, 1, awk_false, NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
       awk_false,
