@@ -18,7 +18,7 @@ BEGIN {
                               0)
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE)
 
-    event = SDL_Gawk_CreateEvent()
+    event = SDL_Gawk_AllocEvent()
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255)
     SDL_RenderClear(renderer)
 

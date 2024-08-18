@@ -27,7 +27,7 @@ BEGIN {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255)
     SDL_RenderClear(renderer)
 
-    rect = SDL_Gawk_CreateRect()
+    rect = SDL_Gawk_AllocRect()
     SDL_Gawk_UpdateRect(rect, 100, 100, 100, 100)
 
     surface = SDL_CreateRGBSurface(0, 100, 100, 32, 0, 0, 0, 0)
@@ -49,7 +49,7 @@ BEGIN {
                                   field, array_of["fmt"][field])
     }
 
-    event = SDL_Gawk_CreateEvent()
+    event = SDL_Gawk_AllocEvent()
     printf "%s", message
     print "\033[1;34mPress [q] or [ESC] to quit\033[0m"
 
