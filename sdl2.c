@@ -1758,6 +1758,28 @@ do_SDL_AllocFormat(int nargs,
     return make_null_string(result);
 }
 
+/* void SDL_FreeFormat(SDL_PixelFormat *format); */
+/* do_SDL_FreeFormat --- provide a SDL_FreeFormat() function for gawk */
+
+static awk_value_t *
+do_SDL_FreeFormat(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t format_ptr_param;
+    uintptr_t format_ptr;
+
+    if (! get_argument(0, AWK_STRING, &format_ptr_param)) {
+        warning(ext_id, _("SDL_FreeFormat: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    format_ptr = strtoull(format_ptr_param.str_value.str,
+                          (char **)NULL,
+                          16);
+
+    SDL_FreeFormat((SDL_PixelFormat *)format_ptr);
+    RETURN_OK;
+}
+
 /* void SDL_Gawk_PixelFormatToArray(SDL_PixelFormat *fmt,
                                     awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
@@ -2488,6 +2510,7 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_AllocFormat", do_SDL_AllocFormat, 1, 1, awk_false, NULL },
+    { "SDL_FreeFormat", do_SDL_FreeFormat, 1, 1, awk_false, NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
       awk_false,
