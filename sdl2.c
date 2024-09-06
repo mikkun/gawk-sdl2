@@ -1948,6 +1948,38 @@ do_SDL_PixelFormatEnumToMasks(int nargs,
                        result);
 }
 
+/* Uint32 SDL_MapRGBA(const SDL_PixelFormat *format,
+                      Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
+/* do_SDL_MapRGBA --- provide a SDL_MapRGBA() function for gawk */
+
+static awk_value_t *
+do_SDL_MapRGBA(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t format_ptr_param;
+    awk_value_t r_param, g_param, b_param, a_param;
+    uintptr_t format_ptr;
+    uint8_t r, g, b, a;
+    uint32_t pixel;
+
+    if (! get_argument(0, AWK_STRING, &format_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &r_param)
+        || ! get_argument(2, AWK_NUMBER, &g_param)
+        || ! get_argument(3, AWK_NUMBER, &b_param)
+        || ! get_argument(4, AWK_NUMBER, &a_param)) {
+        warning(ext_id, _("SDL_MapRGBA: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    format_ptr = strtoull(format_ptr_param.str_value.str, (char **)NULL, 16);
+    r = r_param.num_value;
+    g = g_param.num_value;
+    b = b_param.num_value;
+    a = a_param.num_value;
+
+    pixel = SDL_MapRGBA((const SDL_PixelFormat *)format_ptr, r, g, b, a);
+    return make_number(pixel, result);
+}
+
 /*----- Rectangle Functions ------------------------------------------------*/
 
 /* SDL_Rect *SDL_Gawk_AllocRect(void); */
@@ -2621,6 +2653,7 @@ static awk_ext_func_t func_table[] = {
       6, 6,
       awk_false,
       NULL },
+    { "SDL_MapRGBA", do_SDL_MapRGBA, 5, 5, awk_false, NULL },
     { "SDL_Gawk_AllocRect", do_SDL_Gawk_AllocRect, 0, 0, awk_false, NULL },
     { "SDL_Gawk_UpdateRect", do_SDL_Gawk_UpdateRect, 5, 5, awk_false, NULL },
     { "SDL_HasIntersection", do_SDL_HasIntersection, 2, 2, awk_false, NULL },
