@@ -1151,6 +1151,39 @@ do_SDL_GetWindowPixelFormat(int nargs,
     return make_number(format, result);
 }
 
+/* SDL_Surface *SDL_GetWindowSurface(SDL_Window *window); */
+/* do_SDL_GetWindowSurface --- provide a SDL_GetWindowSurface()
+                               function for gawk */
+
+static awk_value_t *
+do_SDL_GetWindowSurface(int nargs,
+                        awk_value_t *result,
+                        struct awk_ext_func *finfo)
+{
+    SDL_Surface *surface;
+    awk_value_t window_ptr_param;
+    uintptr_t window_ptr;
+
+    if (! get_argument(0, AWK_STRING, &window_ptr_param)) {
+        warning(ext_id, _("SDL_GetWindowSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    window_ptr = strtoull(window_ptr_param.str_value.str, (char **)NULL, 16);
+
+    surface = SDL_GetWindowSurface((SDL_Window *)window_ptr);
+
+    if (surface) {
+        char surface_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(surface_addr, sizeof(surface_addr), "%p", surface);
+        return make_string_malloc(surface_addr, strlen(surface_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_GetWindowSurface failed"));
+    return make_null_string(result);
+}
+
 /* void SDL_SetWindowTitle(SDL_Window *window, const char *title); */
 /* do_SDL_SetWindowTitle --- provide a SDL_SetWindowTitle()
                              function for gawk */
@@ -2614,6 +2647,10 @@ static awk_ext_func_t func_table[] = {
     { "SDL_CreateWindow", do_SDL_CreateWindow, 6, 6, awk_false, NULL },
     { "SDL_DestroyWindow", do_SDL_DestroyWindow, 1, 1, awk_false, NULL },
     { "SDL_GetWindowPixelFormat", do_SDL_GetWindowPixelFormat,
+      1, 1,
+      awk_false,
+      NULL },
+    { "SDL_GetWindowSurface", do_SDL_GetWindowSurface,
       1, 1,
       awk_false,
       NULL },
