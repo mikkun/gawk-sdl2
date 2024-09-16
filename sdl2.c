@@ -1211,6 +1211,33 @@ do_SDL_SetWindowTitle(int nargs,
     RETURN_OK;
 }
 
+/* int SDL_UpdateWindowSurface(SDL_Window *window); */
+/* do_SDL_UpdateWindowSurface --- provide a SDL_UpdateWindowSurface()
+                                  function for gawk */
+
+static awk_value_t *
+do_SDL_UpdateWindowSurface(int nargs,
+                           awk_value_t *result,
+                           struct awk_ext_func *finfo)
+{
+    awk_value_t window_ptr_param;
+    uintptr_t window_ptr;
+    int ret;
+
+    if (! get_argument(0, AWK_STRING, &window_ptr_param)) {
+        warning(ext_id, _("SDL_UpdateWindowSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    window_ptr = strtoull(window_ptr_param.str_value.str, (char **)NULL, 16);
+
+    ret = SDL_UpdateWindowSurface((SDL_Window *)window_ptr);
+    if (ret < 0)
+        update_ERRNO_string(_("SDL_UpdateWindowSurface failed"));
+
+    return make_number(ret, result);
+}
+
 /*----- 2D Accelerated Rendering -------------------------------------------*/
 
 /* SDL_Renderer *SDL_CreateRenderer(SDL_Window *window,
@@ -2655,6 +2682,10 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_SetWindowTitle", do_SDL_SetWindowTitle, 2, 2, awk_false, NULL },
+    { "SDL_UpdateWindowSurface", do_SDL_UpdateWindowSurface,
+      1, 1,
+      awk_false,
+      NULL },
     { "SDL_CreateRenderer", do_SDL_CreateRenderer, 3, 3, awk_false, NULL },
     { "SDL_DestroyRenderer", do_SDL_DestroyRenderer, 1, 1, awk_false, NULL },
     { "SDL_RenderClear", do_SDL_RenderClear, 1, 1, awk_false, NULL },
