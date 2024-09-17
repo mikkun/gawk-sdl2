@@ -2303,6 +2303,28 @@ do_SDL_CreateRGBSurfaceWithFormat(int nargs,
     return make_null_string(result);
 }
 
+/* void SDL_FreeSurface(SDL_Surface *surface); */
+/* do_SDL_FreeSurface --- provide a SDL_FreeSurface() function for gawk */
+
+static awk_value_t *
+do_SDL_FreeSurface(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    uintptr_t surface_ptr;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)) {
+        warning(ext_id, _("SDL_FreeSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    SDL_FreeSurface((SDL_Surface *)surface_ptr);
+    RETURN_OK;
+}
+
 /* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
 /* do_SDL_Gawk_SurfaceToArray --- provide a SDL_Gawk_SurfaceToArray()
@@ -2734,6 +2756,7 @@ static awk_ext_func_t func_table[] = {
       5, 5,
       awk_false,
       NULL },
+    { "SDL_FreeSurface", do_SDL_FreeSurface, 1, 1, awk_false, NULL },
     { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
       2, 2,
       awk_false,
