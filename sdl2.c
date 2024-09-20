@@ -2277,7 +2277,8 @@ do_SDL_CreateRGBSurfaceWithFormat(int nargs,
         || ! get_argument(2, AWK_NUMBER, &height_param)
         || ! get_argument(3, AWK_NUMBER, &depth_param)
         || ! get_argument(4, AWK_NUMBER, &format_param)) {
-        warning(ext_id, _("SDL_CreateRGBSurfaceWithFormat: bad parameter(s)"));
+        warning(ext_id,
+                _("SDL_CreateRGBSurfaceWithFormat: bad parameter(s)"));
         RETURN_NOK;
     }
 
