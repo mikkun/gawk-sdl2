@@ -1731,6 +1731,57 @@ do_SDL_UpdateTexture(int nargs,
 
 /*----- Pixel Formats and Conversion Routines ------------------------------*/
 
+/* void SDL_Gawk_UpdateColorPalette(SDL_Color *colors,
+                                    int index,
+                                    Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_UpdateColorPalette --- provide a SDL_Gawk_UpdateColorPalette()
+                                      function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_UpdateColorPalette(int nargs,
+                               awk_value_t *result,
+                               struct awk_ext_func *finfo)
+{
+    awk_value_t colors_ptr_param;
+    awk_value_t index_param;
+    awk_value_t r_param, g_param, b_param, a_param;
+    uintptr_t colors_ptr;
+    int index;
+    uint8_t r, g, b, a;
+    SDL_Color *colors;
+
+    if (! get_argument(0, AWK_STRING, &colors_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &index_param)
+        || ! get_argument(2, AWK_NUMBER, &r_param)
+        || ! get_argument(3, AWK_NUMBER, &g_param)
+        || ! get_argument(4, AWK_NUMBER, &b_param)
+        || ! get_argument(5, AWK_NUMBER, &a_param)) {
+        warning(ext_id, _("SDL_Gawk_UpdateColorPalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    colors_ptr = strtoull(colors_ptr_param.str_value.str, (char **)NULL, 16);
+    index = index_param.num_value;
+    r = r_param.num_value;
+    g = g_param.num_value;
+    b = b_param.num_value;
+    a = a_param.num_value;
+
+    if (! colors_ptr) {
+        warning(ext_id, _("SDL_Gawk_UpdateColorPalette: invalid colors"));
+        RETURN_NOK;
+    }
+
+    colors = (SDL_Color *)colors_ptr;
+
+    colors[index].r = r;
+    colors[index].g = g;
+    colors[index].b = b;
+    colors[index].a = a;
+    RETURN_OK;
+}
+
 /* SDL_Palette *SDL_AllocPalette(int ncolors); */
 /* do_SDL_AllocPalette --- provide a SDL_AllocPalette() function for gawk */
 
@@ -2728,6 +2779,10 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "SDL_DestroyTexture", do_SDL_DestroyTexture, 1, 1, awk_false, NULL },
     { "SDL_UpdateTexture", do_SDL_UpdateTexture, 4, 4, awk_false, NULL },
+    { "SDL_Gawk_UpdateColorPalette", do_SDL_Gawk_UpdateColorPalette,
+      6, 6,
+      awk_false,
+      NULL },
     { "SDL_AllocPalette", do_SDL_AllocPalette, 1, 1, awk_false, NULL },
     { "SDL_FreePalette", do_SDL_FreePalette, 1, 1, awk_false, NULL },
     { "SDL_SetPaletteColors", do_SDL_SetPaletteColors,
