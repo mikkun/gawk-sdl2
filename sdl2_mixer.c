@@ -108,9 +108,9 @@ do_Mix_Gawk_Linked_Version(int nargs,
                            awk_value_t *result,
                            struct awk_ext_func *finfo)
 {
-    const SDL_version *link_version;
     awk_value_t array_param;
     awk_array_t array;
+    const SDL_version *link_version;
     awk_value_t index, value;
 
     if (! get_argument(0, AWK_ARRAY, &array_param)) {
@@ -120,9 +120,10 @@ do_Mix_Gawk_Linked_Version(int nargs,
 
     array = array_param.array_cookie;
 
+    link_version = Mix_Linked_Version();
+
     clear_array(array);
 
-    link_version = Mix_Linked_Version();
     set_array_element(array,
                       make_const_string("major", 5, &index),
                       make_number(link_version->major, &value));
