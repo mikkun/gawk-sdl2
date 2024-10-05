@@ -2641,9 +2641,10 @@ do_SDL_Gawk_GetKeyboardState(int nargs,
                            16);
     array = array_param.array_cookie;
 
+    state = SDL_GetKeyboardState((int *)numkeys_ptr);
+
     clear_array(array);
 
-    state = SDL_GetKeyboardState((int *)numkeys_ptr);
     for (i = 0; i < SDL_NUM_SCANCODES; i++)
         set_array_element(array,
                           make_number(i, &index),
