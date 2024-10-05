@@ -2134,6 +2134,7 @@ do_SDL_Gawk_UpdateRect(int nargs,
     uintptr_t rect_ptr;
     int x, y;
     int w, h;
+    SDL_Rect *rect;
 
     if (! get_argument(0, AWK_STRING, &rect_ptr_param)
         || ! get_argument(1, AWK_NUMBER, &x_param)
@@ -2155,10 +2156,12 @@ do_SDL_Gawk_UpdateRect(int nargs,
         RETURN_NOK;
     }
 
-    ((SDL_Rect *)rect_ptr)->x = x;
-    ((SDL_Rect *)rect_ptr)->y = y;
-    ((SDL_Rect *)rect_ptr)->w = w;
-    ((SDL_Rect *)rect_ptr)->h = h;
+    rect = (SDL_Rect *)rect_ptr;
+
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
     RETURN_OK;
 }
 
