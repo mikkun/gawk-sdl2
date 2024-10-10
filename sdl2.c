@@ -1731,6 +1731,47 @@ do_SDL_UpdateTexture(int nargs,
 
 /*----- Pixel Formats and Conversion Routines ------------------------------*/
 
+/* SDL_Color *SDL_Gawk_AllocColorPalette(int ncolors); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_AllocColorPalette --- provide a SDL_Gawk_AllocColorPalette()
+                                     function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_AllocColorPalette(int nargs,
+                              awk_value_t *result,
+                              struct awk_ext_func *finfo)
+{
+    awk_value_t ncolors_param;
+    int ncolors;
+    char colors_addr[20];
+    size_t i;
+
+    if (! get_argument(0, AWK_NUMBER, &ncolors_param)) {
+        warning(ext_id, _("SDL_Gawk_AllocColorPalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    ncolors = ncolors_param.num_value;
+
+    if (ncolors < 1) {
+        warning(ext_id,
+                _("SDL_Gawk_AllocColorPalette: invalid number of colors"));
+        RETURN_NOK;
+    }
+
+    SDL_Color colors[ncolors];
+    for (i = 0; i < ncolors; i++) {
+        colors[i].r = 255;
+        colors[i].g = 255;
+        colors[i].b = 255;
+        colors[i].a = 255;
+    }
+
+    // NOLINTNEXTLINE
+    snprintf(colors_addr, sizeof(colors_addr), "%p", colors);
+    return make_string_malloc(colors_addr, strlen(colors_addr), result);
+}
+
 /* void SDL_Gawk_UpdateColorPalette(SDL_Color *colors,
                                     int index,
                                     Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
@@ -2783,6 +2824,10 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "SDL_DestroyTexture", do_SDL_DestroyTexture, 1, 1, awk_false, NULL },
     { "SDL_UpdateTexture", do_SDL_UpdateTexture, 4, 4, awk_false, NULL },
+    { "SDL_Gawk_AllocColorPalette", do_SDL_Gawk_AllocColorPalette,
+      1, 1,
+      awk_false,
+      NULL },
     { "SDL_Gawk_UpdateColorPalette", do_SDL_Gawk_UpdateColorPalette,
       6, 6,
       awk_false,
