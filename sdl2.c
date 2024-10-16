@@ -2421,6 +2421,48 @@ do_SDL_FreeSurface(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     RETURN_OK;
 }
 
+/* void SDL_Gawk_SetRawPixelData(Uint8 *pixels,
+                                 int index,
+                                 Uint8 pixeldata); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_SetRawPixelData --- provide a SDL_Gawk_SetRawPixelData()
+                                   function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_SetRawPixelData(int nargs,
+                            awk_value_t *result,
+                            struct awk_ext_func *finfo)
+{
+    awk_value_t pixels_ptr_param;
+    awk_value_t index_param;
+    awk_value_t pixeldata_param;
+    uintptr_t pixels_ptr;
+    int index;
+    uint8_t pixeldata;
+    uint8_t *pixels;
+
+    if (! get_argument(0, AWK_STRING, &pixels_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &index_param)
+        || ! get_argument(2, AWK_NUMBER, &pixeldata_param)) {
+        warning(ext_id, _("SDL_Gawk_SetRawPixelData: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    pixels_ptr = strtoull(pixels_ptr_param.str_value.str, (char **)NULL, 16);
+    index = index_param.num_value;
+    pixeldata = pixeldata_param.num_value;
+
+    if (! pixels_ptr) {
+        warning(ext_id, _("SDL_Gawk_SetRawPixelData: invalid pixels"));
+        RETURN_NOK;
+    }
+
+    pixels = (uint8_t *)pixels_ptr;
+
+    pixels[index] = pixeldata;
+    RETURN_OK;
+}
+
 /* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
 /* do_SDL_Gawk_SurfaceToArray --- provide a SDL_Gawk_SurfaceToArray()
@@ -2862,6 +2904,10 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_FreeSurface", do_SDL_FreeSurface, 1, 1, awk_false, NULL },
+    { "SDL_Gawk_SetRawPixelData", do_SDL_Gawk_SetRawPixelData,
+      3, 3,
+      awk_false,
+      NULL },
     { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
       2, 2,
       awk_false,
