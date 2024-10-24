@@ -1731,7 +1731,7 @@ do_SDL_UpdateTexture(int nargs,
 
 /*----- Pixel Formats and Conversion Routines ------------------------------*/
 
-/* SDL_Color *SDL_Gawk_AllocColorPalette(int ncolors); */
+/* SDL_Color *SDL_Gawk_AllocColorPalette(int bpp); */
 // /* It doesn't exist in SDL2 */
 /* do_SDL_Gawk_AllocColorPalette --- provide a SDL_Gawk_AllocColorPalette()
                                      function for gawk */
@@ -1741,26 +1741,27 @@ do_SDL_Gawk_AllocColorPalette(int nargs,
                               awk_value_t *result,
                               struct awk_ext_func *finfo)
 {
-    awk_value_t ncolors_param;
-    int ncolors;
+    awk_value_t bpp_param;
+    int bpp;
     char colors_addr[20];
     size_t i;
 
-    if (! get_argument(0, AWK_NUMBER, &ncolors_param)) {
+    if (! get_argument(0, AWK_NUMBER, &bpp_param)) {
         warning(ext_id, _("SDL_Gawk_AllocColorPalette: bad parameter(s)"));
         RETURN_NOK;
     }
 
-    ncolors = ncolors_param.num_value;
+    bpp = bpp_param.num_value;
 
-    if (ncolors < 1) {
+    if (bpp < 1 || bpp > 31) {
         warning(ext_id,
-                _("SDL_Gawk_AllocColorPalette: invalid number of colors"));
+                _("SDL_Gawk_AllocColorPalette: invalid color depth %d"),
+                bpp);
         RETURN_NOK;
     }
 
-    SDL_Color colors[ncolors];
-    for (i = 0; i < ncolors; i++) {
+    SDL_Color colors[1 << bpp];
+    for (i = 0; i < 1 << bpp; i++) {
         colors[i].r = 255;
         colors[i].g = 255;
         colors[i].b = 255;
@@ -2421,80 +2422,146 @@ do_SDL_FreeSurface(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     RETURN_OK;
 }
 
-/* Uint8 SDL_Gawk_GetRawPixelData(Uint8 *pixels, int index); */
+/* Uint32 SDL_Gawk_GetPixelColor(SDL_Surface *surface, int index); */
 // /* It doesn't exist in SDL2 */
-/* do_SDL_Gawk_GetRawPixelData --- provide a SDL_Gawk_GetRawPixelData()
-                                   function for gawk */
+/* do_SDL_Gawk_GetPixelColor --- provide a SDL_Gawk_GetPixelColor()
+                                 function for gawk */
 
 static awk_value_t *
-do_SDL_Gawk_GetRawPixelData(int nargs,
-                            awk_value_t *result,
-                            struct awk_ext_func *finfo)
+do_SDL_Gawk_GetPixelColor(int nargs,
+                          awk_value_t *result,
+                          struct awk_ext_func *finfo)
 {
-    awk_value_t pixels_ptr_param;
+    awk_value_t surface_ptr_param;
     awk_value_t index_param;
-    uintptr_t pixels_ptr;
+    uintptr_t surface_ptr;
     int index;
+    SDL_Surface *surface;
     uint8_t *pixels;
+    uint8_t bpp;
 
-    if (! get_argument(0, AWK_STRING, &pixels_ptr_param)
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
         || ! get_argument(1, AWK_NUMBER, &index_param)) {
-        warning(ext_id, _("SDL_Gawk_GetRawPixelData: bad parameter(s)"));
+        warning(ext_id, _("SDL_Gawk_GetPixelColor: bad parameter(s)"));
         RETURN_NOK;
     }
 
-    pixels_ptr = strtoull(pixels_ptr_param.str_value.str, (char **)NULL, 16);
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
     index = index_param.num_value;
 
-    if (! pixels_ptr) {
-        warning(ext_id, _("SDL_Gawk_GetRawPixelData: invalid pixels"));
+    if (! surface_ptr) {
+        warning(ext_id, _("SDL_Gawk_GetPixelColor: invalid surface"));
         RETURN_NOK;
     }
 
-    pixels = (uint8_t *)pixels_ptr;
-    return make_number(pixels[index], result);
+    surface = (SDL_Surface *)surface_ptr;
+    pixels = (uint8_t *)surface->pixels;
+    bpp = surface->format->BitsPerPixel;
+
+    switch (bpp) {
+    case 8: {
+        uint8_t *pixel = pixels + index;
+        return make_number(*pixel, result);
+    }
+    case 16: {
+        uint16_t *pixel = (uint16_t *)(pixels + index * sizeof(uint16_t));
+        return make_number(*pixel, result);
+    }
+    case 24: { /* only RGB */
+        uint8_t *pixel = pixels + index * 3;
+        uint32_t color = 0;
+        color |= pixel[0]; /* blue */
+        color |= pixel[1] << 8; /* green */
+        color |= pixel[2] << 16; /* red */
+        return make_number(color, result);
+    }
+    case 32: {
+        uint32_t *pixel = (uint32_t *)(pixels + index * sizeof(uint32_t));
+        return make_number(*pixel, result);
+    }
+    default:
+        warning(ext_id,
+                _("SDL_Gawk_GetPixelColor: unsupported color depth %d"),
+                bpp);
+        RETURN_NOK;
+    }
 }
 
-/* void SDL_Gawk_SetRawPixelData(Uint8 *pixels,
-                                 int index,
-                                 Uint8 pixeldata); */
+/* void SDL_Gawk_SetPixelColor(SDL_Surface *surface,
+                               int index,
+                               Uint32 color); */
 // /* It doesn't exist in SDL2 */
-/* do_SDL_Gawk_SetRawPixelData --- provide a SDL_Gawk_SetRawPixelData()
-                                   function for gawk */
+/* do_SDL_Gawk_SetPixelColor --- provide a SDL_Gawk_SetPixelColor()
+                                 function for gawk */
 
 static awk_value_t *
-do_SDL_Gawk_SetRawPixelData(int nargs,
-                            awk_value_t *result,
-                            struct awk_ext_func *finfo)
+do_SDL_Gawk_SetPixelColor(int nargs,
+                          awk_value_t *result,
+                          struct awk_ext_func *finfo)
 {
-    awk_value_t pixels_ptr_param;
+    awk_value_t surface_ptr_param;
     awk_value_t index_param;
-    awk_value_t pixeldata_param;
-    uintptr_t pixels_ptr;
+    awk_value_t color_param;
+    uintptr_t surface_ptr;
     int index;
-    uint8_t pixeldata;
+    uint32_t color;
+    SDL_Surface *surface;
     uint8_t *pixels;
+    uint8_t bpp;
 
-    if (! get_argument(0, AWK_STRING, &pixels_ptr_param)
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
         || ! get_argument(1, AWK_NUMBER, &index_param)
-        || ! get_argument(2, AWK_NUMBER, &pixeldata_param)) {
-        warning(ext_id, _("SDL_Gawk_SetRawPixelData: bad parameter(s)"));
+        || ! get_argument(2, AWK_NUMBER, &color_param)) {
+        warning(ext_id, _("SDL_Gawk_SetPixelColor: bad parameter(s)"));
         RETURN_NOK;
     }
 
-    pixels_ptr = strtoull(pixels_ptr_param.str_value.str, (char **)NULL, 16);
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
     index = index_param.num_value;
-    pixeldata = pixeldata_param.num_value;
+    color = color_param.num_value;
 
-    if (! pixels_ptr) {
-        warning(ext_id, _("SDL_Gawk_SetRawPixelData: invalid pixels"));
+    if (! surface_ptr) {
+        warning(ext_id, _("SDL_Gawk_SetPixelColor: invalid surface"));
         RETURN_NOK;
     }
 
-    pixels = (uint8_t *)pixels_ptr;
+    surface = (SDL_Surface *)surface_ptr;
+    pixels = (uint8_t *)surface->pixels;
+    bpp = surface->format->BitsPerPixel;
 
-    pixels[index] = pixeldata;
-    RETURN_OK;
+    switch (bpp) {
+    case 8: {
+        uint8_t *pixel = pixels + index;
+        *pixel = (uint8_t)color;
+        RETURN_OK;
+    }
+    case 16: {
+        uint16_t *pixel = (uint16_t *)(pixels + index * sizeof(uint16_t));
+        *pixel = (uint16_t)color;
+        RETURN_OK;
+    }
+    case 24: { /* only RGB */
+        uint8_t *pixel = pixels + index * 3;
+        pixel[0] = (color & 0x0000FF); /* blue */
+        pixel[1] = (color & 0x00FF00) >> 8; /* green */
+        pixel[2] = (color & 0xFF0000) >> 16; /* red */
+        RETURN_OK;
+    }
+    case 32: {
+        uint32_t *pixel = (uint32_t *)(pixels + index * sizeof(uint32_t));
+        *pixel = color;
+        RETURN_OK;
+    }
+    default:
+        warning(ext_id,
+                _("SDL_Gawk_SetPixelColor: unsupported color depth %d"),
+                bpp);
+        RETURN_NOK;
+    }
 }
 
 /* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
@@ -2938,11 +3005,11 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_FreeSurface", do_SDL_FreeSurface, 1, 1, awk_false, NULL },
-    { "SDL_Gawk_GetRawPixelData", do_SDL_Gawk_GetRawPixelData,
+    { "SDL_Gawk_GetPixelColor", do_SDL_Gawk_GetPixelColor,
       2, 2,
       awk_false,
       NULL },
-    { "SDL_Gawk_SetRawPixelData", do_SDL_Gawk_SetRawPixelData,
+    { "SDL_Gawk_SetPixelColor", do_SDL_Gawk_SetPixelColor,
       3, 3,
       awk_false,
       NULL },
