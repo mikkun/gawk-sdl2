@@ -69,33 +69,46 @@ See `examples/*.awk` for usage.
 
 ### SDL 2.0
 
+- `SDL_AllocFormat`
+- `SDL_AllocPalette`
 - `SDL_BlitSurface`
 - `SDL_CreateRGBSurface`
+- `SDL_CreateRGBSurfaceWithFormat`
 - `SDL_CreateRenderer`
 - `SDL_CreateTexture`
+- `SDL_CreateTextureFromSurface`
 - `SDL_CreateWindow`
 - `SDL_Delay`
 - `SDL_DestroyRenderer`
 - `SDL_DestroyTexture`
 - `SDL_DestroyWindow`
 - `SDL_FillRect`
-- `SDL_Gawk_CreateEvent`
-- `SDL_Gawk_CreateRect`
+- `SDL_FreeFormat`
+- `SDL_FreePalette`
+- `SDL_FreeSurface`
+- `SDL_Gawk_AllocColorPalette`
+- `SDL_Gawk_AllocEvent`
+- `SDL_Gawk_AllocRect`
 - `SDL_Gawk_GetEventType`
 - `SDL_Gawk_GetKeyboardState`
+- `SDL_Gawk_GetPixelColor`
 - `SDL_Gawk_PixelFormatToArray`
+- `SDL_Gawk_SetPixelColor`
 - `SDL_Gawk_SurfaceToArray`
+- `SDL_Gawk_UpdateColorPalette`
 - `SDL_Gawk_UpdateRect`
 - `SDL_GetError`
 - `SDL_GetTicks`
 - `SDL_GetWindowPixelFormat`
+- `SDL_GetWindowSurface`
 - `SDL_HasIntersection`
-- `SDL_InitSubSystem`
 - `SDL_Init`
+- `SDL_InitSubSystem`
+- `SDL_MapRGBA`
 - `SDL_PixelFormatEnumToMasks`
 - `SDL_PollEvent`
-- `SDL_QuitSubSystem`
 - `SDL_Quit`
+- `SDL_QuitSubSystem`
 - `SDL_RenderClear`
 - `SDL_RenderCopy`
 - `SDL_RenderDrawLine`
@@ -104,9 +117,11 @@ See `examples/*.awk` for usage.
 - `SDL_RenderPresent`
 - `SDL_SetPaletteColors`
 - `SDL_SetRenderDrawColor`
+- `SDL_SetSurfacePalette`
 - `SDL_SetWindowTitle`
 - `SDL_ShowSimpleMessageBox`
 - `SDL_UpdateTexture`
+- `SDL_UpdateWindowSurface`
 - `SDL_VERSIONNUM`
 
 ### SDL_mixer 2.0
@@ -123,11 +138,11 @@ See `examples/*.awk` for usage.
 - `Mix_LoadMUS`
 - `Mix_LoadWAV`
 - `Mix_OpenAudio`
-- `Mix_PlayChannelTimed`
 - `Mix_PlayChannel`
+- `Mix_PlayChannelTimed`
 - `Mix_PlayMusic`
-- `Mix_PlayingMusic`
 - `Mix_Playing`
+- `Mix_PlayingMusic`
 - `Mix_SetDistance`
 - `Mix_SetMusicCMD`
 - `Mix_SetMusicPosition`
