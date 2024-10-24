@@ -36,17 +36,17 @@ BEGIN {
     chunk["wall"]     = Mix_LoadWAV("./assets/wall.wav")
     volume            = 0
 
-    paddle_l["ptr"] = SDL_Gawk_CreateRect()
+    paddle_l["ptr"] = SDL_Gawk_AllocRect()
     paddle_l["x"]   = PADDLE_W
     paddle_l["y"]   = (WINDOW_H - PADDLE_H) / 2
     paddle_l["vy"]  = PADDLE_SPEED
 
-    paddle_r["ptr"] = SDL_Gawk_CreateRect()
+    paddle_r["ptr"] = SDL_Gawk_AllocRect()
     paddle_r["x"]   = WINDOW_W - PADDLE_W * 2
     paddle_r["y"]   = (WINDOW_H - PADDLE_H) / 2
     paddle_r["vy"]  = PADDLE_SPEED * 0.75
 
-    ball["ptr"] = SDL_Gawk_CreateRect()
+    ball["ptr"] = SDL_Gawk_AllocRect()
     ball["x"]   = (WINDOW_W - BALL_SIZE) / 2
     ball["y"]   = 0
     ball["vx"]  = int(rand() * 2) ? BALL_SPEED : -BALL_SPEED
@@ -62,7 +62,7 @@ BEGIN {
     score_r["y"]      = PIXEL_SIZE * 2
     init_pixels(score_r)
 
-    event = SDL_Gawk_CreateEvent()
+    event = SDL_Gawk_AllocEvent()
     SDL_Gawk_UpdateRect(paddle_l["ptr"],
                         paddle_l["x"], paddle_l["y"],
                         PADDLE_W, PADDLE_H)
@@ -284,7 +284,7 @@ function abs(num)
 function init_pixels(score,    i)
 {
     for (i = 1; i <= 15; i++) {
-        score["pixels"][i]["ptr"] = SDL_Gawk_CreateRect()
+        score["pixels"][i]["ptr"] = SDL_Gawk_AllocRect()
         score["pixels"][i]["x"]   = score["x"] + PIXEL_SIZE * ((i - 1) % 3)
         score["pixels"][i]["y"]   = score["y"] + PIXEL_SIZE * int((i - 1) / 3)
         SDL_Gawk_UpdateRect(score["pixels"][i]["ptr"],

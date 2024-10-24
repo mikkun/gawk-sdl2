@@ -1151,6 +1151,39 @@ do_SDL_GetWindowPixelFormat(int nargs,
     return make_number(format, result);
 }
 
+/* SDL_Surface *SDL_GetWindowSurface(SDL_Window *window); */
+/* do_SDL_GetWindowSurface --- provide a SDL_GetWindowSurface()
+                               function for gawk */
+
+static awk_value_t *
+do_SDL_GetWindowSurface(int nargs,
+                        awk_value_t *result,
+                        struct awk_ext_func *finfo)
+{
+    SDL_Surface *surface;
+    awk_value_t window_ptr_param;
+    uintptr_t window_ptr;
+
+    if (! get_argument(0, AWK_STRING, &window_ptr_param)) {
+        warning(ext_id, _("SDL_GetWindowSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    window_ptr = strtoull(window_ptr_param.str_value.str, (char **)NULL, 16);
+
+    surface = SDL_GetWindowSurface((SDL_Window *)window_ptr);
+
+    if (surface) {
+        char surface_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(surface_addr, sizeof(surface_addr), "%p", surface);
+        return make_string_malloc(surface_addr, strlen(surface_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_GetWindowSurface failed"));
+    return make_null_string(result);
+}
+
 /* void SDL_SetWindowTitle(SDL_Window *window, const char *title); */
 /* do_SDL_SetWindowTitle --- provide a SDL_SetWindowTitle()
                              function for gawk */
@@ -1176,6 +1209,33 @@ do_SDL_SetWindowTitle(int nargs,
 
     SDL_SetWindowTitle((SDL_Window *)window_ptr, title);
     RETURN_OK;
+}
+
+/* int SDL_UpdateWindowSurface(SDL_Window *window); */
+/* do_SDL_UpdateWindowSurface --- provide a SDL_UpdateWindowSurface()
+                                  function for gawk */
+
+static awk_value_t *
+do_SDL_UpdateWindowSurface(int nargs,
+                           awk_value_t *result,
+                           struct awk_ext_func *finfo)
+{
+    awk_value_t window_ptr_param;
+    uintptr_t window_ptr;
+    int ret;
+
+    if (! get_argument(0, AWK_STRING, &window_ptr_param)) {
+        warning(ext_id, _("SDL_UpdateWindowSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    window_ptr = strtoull(window_ptr_param.str_value.str, (char **)NULL, 16);
+
+    ret = SDL_UpdateWindowSurface((SDL_Window *)window_ptr);
+    if (ret < 0)
+        update_ERRNO_string(_("SDL_UpdateWindowSurface failed"));
+
+    return make_number(ret, result);
 }
 
 /*----- 2D Accelerated Rendering -------------------------------------------*/
@@ -1554,6 +1614,50 @@ do_SDL_CreateTexture(int nargs,
     return make_null_string(result);
 }
 
+/* SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer,
+                                             SDL_Surface *surface); */
+/* do_SDL_CreateTextureFromSurface --- provide a
+                                       SDL_CreateTextureFromSurface()
+                                       function for gawk */
+
+static awk_value_t *
+do_SDL_CreateTextureFromSurface(int nargs,
+                                awk_value_t *result,
+                                struct awk_ext_func *finfo)
+{
+    SDL_Texture *texture;
+    awk_value_t renderer_ptr_param;
+    awk_value_t surface_ptr_param;
+    uintptr_t renderer_ptr;
+    uintptr_t surface_ptr;
+
+    if (! get_argument(0, AWK_STRING, &renderer_ptr_param)
+        || ! get_argument(1, AWK_STRING, &surface_ptr_param)) {
+        warning(ext_id, _("SDL_CreateTextureFromSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    renderer_ptr = strtoull(renderer_ptr_param.str_value.str,
+                            (char **)NULL,
+                            16);
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    texture = SDL_CreateTextureFromSurface((SDL_Renderer *)renderer_ptr,
+                                           (SDL_Surface *)surface_ptr);
+
+    if (texture) {
+        char texture_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(texture_addr, sizeof(texture_addr), "%p", texture);
+        return make_string_malloc(texture_addr, strlen(texture_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_CreateTextureFromSurface failed"));
+    return make_null_string(result);
+}
+
 /* void SDL_DestroyTexture(SDL_Texture *texture); */
 /* do_SDL_DestroyTexture --- provide a SDL_DestroyTexture()
                              function for gawk */
@@ -1627,6 +1731,153 @@ do_SDL_UpdateTexture(int nargs,
 
 /*----- Pixel Formats and Conversion Routines ------------------------------*/
 
+/* SDL_Color *SDL_Gawk_AllocColorPalette(int bpp); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_AllocColorPalette --- provide a SDL_Gawk_AllocColorPalette()
+                                     function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_AllocColorPalette(int nargs,
+                              awk_value_t *result,
+                              struct awk_ext_func *finfo)
+{
+    awk_value_t bpp_param;
+    int bpp;
+    char colors_addr[20];
+    size_t i;
+
+    if (! get_argument(0, AWK_NUMBER, &bpp_param)) {
+        warning(ext_id, _("SDL_Gawk_AllocColorPalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    bpp = bpp_param.num_value;
+
+    if (bpp < 1 || bpp > 31) {
+        warning(ext_id,
+                _("SDL_Gawk_AllocColorPalette: invalid color depth %d"),
+                bpp);
+        RETURN_NOK;
+    }
+
+    SDL_Color colors[1 << bpp];
+    for (i = 0; i < 1 << bpp; i++) {
+        colors[i].r = 255;
+        colors[i].g = 255;
+        colors[i].b = 255;
+        colors[i].a = 255;
+    }
+
+    // NOLINTNEXTLINE
+    snprintf(colors_addr, sizeof(colors_addr), "%p", colors);
+    return make_string_malloc(colors_addr, strlen(colors_addr), result);
+}
+
+/* void SDL_Gawk_UpdateColorPalette(SDL_Color *colors,
+                                    int index,
+                                    Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_UpdateColorPalette --- provide a SDL_Gawk_UpdateColorPalette()
+                                      function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_UpdateColorPalette(int nargs,
+                               awk_value_t *result,
+                               struct awk_ext_func *finfo)
+{
+    awk_value_t colors_ptr_param;
+    awk_value_t index_param;
+    awk_value_t r_param, g_param, b_param, a_param;
+    uintptr_t colors_ptr;
+    int index;
+    uint8_t r, g, b, a;
+    SDL_Color *colors;
+
+    if (! get_argument(0, AWK_STRING, &colors_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &index_param)
+        || ! get_argument(2, AWK_NUMBER, &r_param)
+        || ! get_argument(3, AWK_NUMBER, &g_param)
+        || ! get_argument(4, AWK_NUMBER, &b_param)
+        || ! get_argument(5, AWK_NUMBER, &a_param)) {
+        warning(ext_id, _("SDL_Gawk_UpdateColorPalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    colors_ptr = strtoull(colors_ptr_param.str_value.str, (char **)NULL, 16);
+    index = index_param.num_value;
+    r = r_param.num_value;
+    g = g_param.num_value;
+    b = b_param.num_value;
+    a = a_param.num_value;
+
+    if (! colors_ptr) {
+        warning(ext_id, _("SDL_Gawk_UpdateColorPalette: invalid colors"));
+        RETURN_NOK;
+    }
+
+    colors = (SDL_Color *)colors_ptr;
+
+    colors[index].r = r;
+    colors[index].g = g;
+    colors[index].b = b;
+    colors[index].a = a;
+    RETURN_OK;
+}
+
+/* SDL_Palette *SDL_AllocPalette(int ncolors); */
+/* do_SDL_AllocPalette --- provide a SDL_AllocPalette() function for gawk */
+
+static awk_value_t *
+do_SDL_AllocPalette(int nargs,
+                    awk_value_t *result,
+                    struct awk_ext_func *finfo)
+{
+    SDL_Palette *palette;
+    awk_value_t ncolors_param;
+    int ncolors;
+
+    if (! get_argument(0, AWK_NUMBER, &ncolors_param)) {
+        warning(ext_id, _("SDL_AllocPalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    ncolors = ncolors_param.num_value;
+
+    palette = SDL_AllocPalette(ncolors);
+
+    if (palette) {
+        char palette_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(palette_addr, sizeof(palette_addr), "%p", palette);
+        return make_string_malloc(palette_addr, strlen(palette_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_AllocPalette failed"));
+    return make_null_string(result);
+}
+
+/* void SDL_FreePalette(SDL_Palette *palette); */
+/* do_SDL_FreePalette --- provide a SDL_FreePalette() function for gawk */
+
+static awk_value_t *
+do_SDL_FreePalette(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t palette_ptr_param;
+    uintptr_t palette_ptr;
+
+    if (! get_argument(0, AWK_STRING, &palette_ptr_param)) {
+        warning(ext_id, _("SDL_FreePalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    palette_ptr = strtoull(palette_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    SDL_FreePalette((SDL_Palette *)palette_ptr);
+    RETURN_OK;
+}
+
 /* int SDL_SetPaletteColors(SDL_Palette *palette,
                             const SDL_Color *colors,
                             int firstcolor, int ncolors); */
@@ -1670,6 +1921,60 @@ do_SDL_SetPaletteColors(int nargs,
         update_ERRNO_string(_("SDL_SetPaletteColors failed"));
 
     return make_number(ret, result);
+}
+
+/* SDL_PixelFormat *SDL_AllocFormat(Uint32 pixel_format); */
+/* do_SDL_AllocFormat --- provide a SDL_AllocFormat() function for gawk */
+
+static awk_value_t *
+do_SDL_AllocFormat(int nargs,
+                   awk_value_t *result,
+                   struct awk_ext_func *finfo)
+{
+    SDL_PixelFormat *format;
+    awk_value_t pixel_format_param;
+    uint32_t pixel_format;
+
+    if (! get_argument(0, AWK_NUMBER, &pixel_format_param)) {
+        warning(ext_id, _("SDL_AllocFormat: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    pixel_format = pixel_format_param.num_value;
+
+    format = SDL_AllocFormat(pixel_format);
+
+    if (format) {
+        char format_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(format_addr, sizeof(format_addr), "%p", format);
+        return make_string_malloc(format_addr, strlen(format_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_AllocFormat failed"));
+    return make_null_string(result);
+}
+
+/* void SDL_FreeFormat(SDL_PixelFormat *format); */
+/* do_SDL_FreeFormat --- provide a SDL_FreeFormat() function for gawk */
+
+static awk_value_t *
+do_SDL_FreeFormat(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t format_ptr_param;
+    uintptr_t format_ptr;
+
+    if (! get_argument(0, AWK_STRING, &format_ptr_param)) {
+        warning(ext_id, _("SDL_FreeFormat: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    format_ptr = strtoull(format_ptr_param.str_value.str,
+                          (char **)NULL,
+                          16);
+
+    SDL_FreeFormat((SDL_PixelFormat *)format_ptr);
+    RETURN_OK;
 }
 
 /* void SDL_Gawk_PixelFormatToArray(SDL_PixelFormat *fmt,
@@ -1796,17 +2101,49 @@ do_SDL_PixelFormatEnumToMasks(int nargs,
                        result);
 }
 
-/*----- Rectangle Functions ------------------------------------------------*/
-
-/* SDL_Rect *SDL_Gawk_CreateRect(void); */
-// /* It doesn't exist in SDL2 */
-/* do_SDL_Gawk_CreateRect --- provide a SDL_Gawk_CreateRect()
-                              function for gawk */
+/* Uint32 SDL_MapRGBA(const SDL_PixelFormat *format,
+                      Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
+/* do_SDL_MapRGBA --- provide a SDL_MapRGBA() function for gawk */
 
 static awk_value_t *
-do_SDL_Gawk_CreateRect(int nargs,
-                       awk_value_t *result,
-                       struct awk_ext_func *finfo)
+do_SDL_MapRGBA(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t format_ptr_param;
+    awk_value_t r_param, g_param, b_param, a_param;
+    uintptr_t format_ptr;
+    uint8_t r, g, b, a;
+    uint32_t pixel;
+
+    if (! get_argument(0, AWK_STRING, &format_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &r_param)
+        || ! get_argument(2, AWK_NUMBER, &g_param)
+        || ! get_argument(3, AWK_NUMBER, &b_param)
+        || ! get_argument(4, AWK_NUMBER, &a_param)) {
+        warning(ext_id, _("SDL_MapRGBA: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    format_ptr = strtoull(format_ptr_param.str_value.str, (char **)NULL, 16);
+    r = r_param.num_value;
+    g = g_param.num_value;
+    b = b_param.num_value;
+    a = a_param.num_value;
+
+    pixel = SDL_MapRGBA((const SDL_PixelFormat *)format_ptr, r, g, b, a);
+    return make_number(pixel, result);
+}
+
+/*----- Rectangle Functions ------------------------------------------------*/
+
+/* SDL_Rect *SDL_Gawk_AllocRect(void); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_AllocRect --- provide a SDL_Gawk_AllocRect()
+                             function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_AllocRect(int nargs,
+                      awk_value_t *result,
+                      struct awk_ext_func *finfo)
 {
     SDL_Rect *rect;
 
@@ -1819,7 +2156,7 @@ do_SDL_Gawk_CreateRect(int nargs,
         return make_string_malloc(rect_addr, strlen(rect_addr), result);
     }
 
-    update_ERRNO_string(_("SDL_Gawk_CreateRect failed"));
+    update_ERRNO_string(_("SDL_Gawk_AllocRect failed"));
     return make_null_string(result);
 }
 
@@ -1839,6 +2176,7 @@ do_SDL_Gawk_UpdateRect(int nargs,
     uintptr_t rect_ptr;
     int x, y;
     int w, h;
+    SDL_Rect *rect;
 
     if (! get_argument(0, AWK_STRING, &rect_ptr_param)
         || ! get_argument(1, AWK_NUMBER, &x_param)
@@ -1860,10 +2198,12 @@ do_SDL_Gawk_UpdateRect(int nargs,
         RETURN_NOK;
     }
 
-    ((SDL_Rect *)rect_ptr)->x = x;
-    ((SDL_Rect *)rect_ptr)->y = y;
-    ((SDL_Rect *)rect_ptr)->w = w;
-    ((SDL_Rect *)rect_ptr)->h = h;
+    rect = (SDL_Rect *)rect_ptr;
+
+    rect->x = x;
+    rect->y = y;
+    rect->w = w;
+    rect->h = h;
     RETURN_OK;
 }
 
@@ -2005,6 +2345,225 @@ do_SDL_CreateRGBSurface(int nargs,
     return make_null_string(result);
 }
 
+/* SDL_Surface *SDL_CreateRGBSurfaceWithFormat(Uint32 flags,
+                                               int width, int height,
+                                               int depth,
+                                               Uint32 format); */
+/* do_SDL_CreateRGBSurfaceWithFormat --- provide a
+                                         SDL_CreateRGBSurfaceWithFormat()
+                                         function for gawk */
+
+static awk_value_t *
+do_SDL_CreateRGBSurfaceWithFormat(int nargs,
+                                  awk_value_t *result,
+                                  struct awk_ext_func *finfo)
+{
+    SDL_Surface *surface;
+    awk_value_t flags_param;
+    awk_value_t width_param, height_param;
+    awk_value_t depth_param;
+    awk_value_t format_param;
+    uint32_t flags;
+    int width, height;
+    int depth;
+    uint32_t format;
+
+    if (! get_argument(0, AWK_NUMBER, &flags_param)
+        || ! get_argument(1, AWK_NUMBER, &width_param)
+        || ! get_argument(2, AWK_NUMBER, &height_param)
+        || ! get_argument(3, AWK_NUMBER, &depth_param)
+        || ! get_argument(4, AWK_NUMBER, &format_param)) {
+        warning(ext_id,
+                _("SDL_CreateRGBSurfaceWithFormat: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    flags = flags_param.num_value;
+    width = width_param.num_value;
+    height = height_param.num_value;
+    depth = depth_param.num_value;
+    format = format_param.num_value;
+
+    surface = SDL_CreateRGBSurfaceWithFormat(flags,
+                                             width, height,
+                                             depth,
+                                             format);
+
+    if (surface) {
+        char surface_addr[20];
+        // NOLINTNEXTLINE
+        snprintf(surface_addr, sizeof(surface_addr), "%p", surface);
+        return make_string_malloc(surface_addr, strlen(surface_addr), result);
+    }
+
+    update_ERRNO_string(_("SDL_CreateRGBSurfaceWithFormat failed"));
+    return make_null_string(result);
+}
+
+/* void SDL_FreeSurface(SDL_Surface *surface); */
+/* do_SDL_FreeSurface --- provide a SDL_FreeSurface() function for gawk */
+
+static awk_value_t *
+do_SDL_FreeSurface(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    uintptr_t surface_ptr;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)) {
+        warning(ext_id, _("SDL_FreeSurface: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    SDL_FreeSurface((SDL_Surface *)surface_ptr);
+    RETURN_OK;
+}
+
+/* Uint32 SDL_Gawk_GetPixelColor(SDL_Surface *surface, int index); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_GetPixelColor --- provide a SDL_Gawk_GetPixelColor()
+                                 function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_GetPixelColor(int nargs,
+                          awk_value_t *result,
+                          struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    awk_value_t index_param;
+    uintptr_t surface_ptr;
+    int index;
+    SDL_Surface *surface;
+    uint8_t *pixels;
+    uint8_t bpp;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &index_param)) {
+        warning(ext_id, _("SDL_Gawk_GetPixelColor: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+    index = index_param.num_value;
+
+    if (! surface_ptr) {
+        warning(ext_id, _("SDL_Gawk_GetPixelColor: invalid surface"));
+        RETURN_NOK;
+    }
+
+    surface = (SDL_Surface *)surface_ptr;
+    pixels = (uint8_t *)surface->pixels;
+    bpp = surface->format->BitsPerPixel;
+
+    switch (bpp) {
+    case 8: {
+        uint8_t *pixel = pixels + index;
+        return make_number(*pixel, result);
+    }
+    case 16: {
+        uint16_t *pixel = (uint16_t *)(pixels + index * sizeof(uint16_t));
+        return make_number(*pixel, result);
+    }
+    case 24: { /* only RGB */
+        uint8_t *pixel = pixels + index * 3;
+        uint32_t color = 0;
+        color |= pixel[0]; /* blue */
+        color |= pixel[1] << 8; /* green */
+        color |= pixel[2] << 16; /* red */
+        return make_number(color, result);
+    }
+    case 32: {
+        uint32_t *pixel = (uint32_t *)(pixels + index * sizeof(uint32_t));
+        return make_number(*pixel, result);
+    }
+    default:
+        warning(ext_id,
+                _("SDL_Gawk_GetPixelColor: unsupported color depth %d"),
+                bpp);
+        RETURN_NOK;
+    }
+}
+
+/* void SDL_Gawk_SetPixelColor(SDL_Surface *surface,
+                               int index,
+                               Uint32 color); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_SetPixelColor --- provide a SDL_Gawk_SetPixelColor()
+                                 function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_SetPixelColor(int nargs,
+                          awk_value_t *result,
+                          struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    awk_value_t index_param;
+    awk_value_t color_param;
+    uintptr_t surface_ptr;
+    int index;
+    uint32_t color;
+    SDL_Surface *surface;
+    uint8_t *pixels;
+    uint8_t bpp;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
+        || ! get_argument(1, AWK_NUMBER, &index_param)
+        || ! get_argument(2, AWK_NUMBER, &color_param)) {
+        warning(ext_id, _("SDL_Gawk_SetPixelColor: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+    index = index_param.num_value;
+    color = color_param.num_value;
+
+    if (! surface_ptr) {
+        warning(ext_id, _("SDL_Gawk_SetPixelColor: invalid surface"));
+        RETURN_NOK;
+    }
+
+    surface = (SDL_Surface *)surface_ptr;
+    pixels = (uint8_t *)surface->pixels;
+    bpp = surface->format->BitsPerPixel;
+
+    switch (bpp) {
+    case 8: {
+        uint8_t *pixel = pixels + index;
+        *pixel = (uint8_t)color;
+        RETURN_OK;
+    }
+    case 16: {
+        uint16_t *pixel = (uint16_t *)(pixels + index * sizeof(uint16_t));
+        *pixel = (uint16_t)color;
+        RETURN_OK;
+    }
+    case 24: { /* only RGB */
+        uint8_t *pixel = pixels + index * 3;
+        pixel[0] = (color & 0x0000FF); /* blue */
+        pixel[1] = (color & 0x00FF00) >> 8; /* green */
+        pixel[2] = (color & 0xFF0000) >> 16; /* red */
+        RETURN_OK;
+    }
+    case 32: {
+        uint32_t *pixel = (uint32_t *)(pixels + index * sizeof(uint32_t));
+        *pixel = color;
+        RETURN_OK;
+    }
+    default:
+        warning(ext_id,
+                _("SDL_Gawk_SetPixelColor: unsupported color depth %d"),
+                bpp);
+        RETURN_NOK;
+    }
+}
+
 /* void SDL_Gawk_SurfaceToArray(SDL_Surface *surface, awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
 /* do_SDL_Gawk_SurfaceToArray --- provide a SDL_Gawk_SurfaceToArray()
@@ -2089,6 +2648,42 @@ do_SDL_Gawk_SurfaceToArray(int nargs,
     RETURN_OK;
 }
 
+/* int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette); */
+/* do_SDL_SetSurfacePalette --- provide a SDL_SetSurfacePalette()
+                                function for gawk */
+
+static awk_value_t *
+do_SDL_SetSurfacePalette(int nargs,
+                         awk_value_t *result,
+                         struct awk_ext_func *finfo)
+{
+    awk_value_t surface_ptr_param;
+    awk_value_t palette_ptr_param;
+    uintptr_t surface_ptr;
+    uintptr_t palette_ptr;
+    int ret;
+
+    if (! get_argument(0, AWK_STRING, &surface_ptr_param)
+        || ! get_argument(1, AWK_STRING, &palette_ptr_param)) {
+        warning(ext_id, _("SDL_SetSurfacePalette: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    surface_ptr = strtoull(surface_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+    palette_ptr = strtoull(palette_ptr_param.str_value.str,
+                           (char **)NULL,
+                           16);
+
+    ret = SDL_SetSurfacePalette((SDL_Surface *)surface_ptr,
+                                (SDL_Palette *)palette_ptr);
+    if (ret < 0)
+        update_ERRNO_string(_("SDL_SetSurfacePalette failed"));
+
+    return make_number(ret, result);
+}
+
 /* int SDL_FillRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color); */
 /* do_SDL_FillRect --- provide a SDL_FillRect() function for gawk */
 
@@ -2125,15 +2720,15 @@ do_SDL_FillRect(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
 
 /*----- Event Handling -----------------------------------------------------*/
 
-/* SDL_Event *SDL_Gawk_CreateEvent(void); */
+/* SDL_Event *SDL_Gawk_AllocEvent(void); */
 // /* It doesn't exist in SDL2 */
-/* do_SDL_Gawk_CreateEvent --- provide a SDL_Gawk_CreateEvent()
-                               function for gawk */
+/* do_SDL_Gawk_AllocEvent --- provide a SDL_Gawk_AllocEvent()
+                              function for gawk */
 
 static awk_value_t *
-do_SDL_Gawk_CreateEvent(int nargs,
-                        awk_value_t *result,
-                        struct awk_ext_func *finfo)
+do_SDL_Gawk_AllocEvent(int nargs,
+                       awk_value_t *result,
+                       struct awk_ext_func *finfo)
 {
     SDL_Event *event;
 
@@ -2146,7 +2741,7 @@ do_SDL_Gawk_CreateEvent(int nargs,
         return make_string_malloc(event_addr, strlen(event_addr), result);
     }
 
-    update_ERRNO_string(_("SDL_Gawk_CreateEvent failed"));
+    update_ERRNO_string(_("SDL_Gawk_AllocEvent failed"));
     return make_null_string(result);
 }
 
@@ -2230,9 +2825,10 @@ do_SDL_Gawk_GetKeyboardState(int nargs,
                            16);
     array = array_param.array_cookie;
 
+    state = SDL_GetKeyboardState((int *)numkeys_ptr);
+
     clear_array(array);
 
-    state = SDL_GetKeyboardState((int *)numkeys_ptr);
     for (i = 0; i < SDL_NUM_SCANCODES; i++)
         set_array_element(array,
                           make_number(i, &index),
@@ -2343,7 +2939,15 @@ static awk_ext_func_t func_table[] = {
       1, 1,
       awk_false,
       NULL },
+    { "SDL_GetWindowSurface", do_SDL_GetWindowSurface,
+      1, 1,
+      awk_false,
+      NULL },
     { "SDL_SetWindowTitle", do_SDL_SetWindowTitle, 2, 2, awk_false, NULL },
+    { "SDL_UpdateWindowSurface", do_SDL_UpdateWindowSurface,
+      1, 1,
+      awk_false,
+      NULL },
     { "SDL_CreateRenderer", do_SDL_CreateRenderer, 3, 3, awk_false, NULL },
     { "SDL_DestroyRenderer", do_SDL_DestroyRenderer, 1, 1, awk_false, NULL },
     { "SDL_RenderClear", do_SDL_RenderClear, 1, 1, awk_false, NULL },
@@ -2357,12 +2961,28 @@ static awk_ext_func_t func_table[] = {
       awk_false,
       NULL },
     { "SDL_CreateTexture", do_SDL_CreateTexture, 5, 5, awk_false, NULL },
+    { "SDL_CreateTextureFromSurface", do_SDL_CreateTextureFromSurface,
+      2, 2,
+      awk_false,
+      NULL },
     { "SDL_DestroyTexture", do_SDL_DestroyTexture, 1, 1, awk_false, NULL },
     { "SDL_UpdateTexture", do_SDL_UpdateTexture, 4, 4, awk_false, NULL },
+    { "SDL_Gawk_AllocColorPalette", do_SDL_Gawk_AllocColorPalette,
+      1, 1,
+      awk_false,
+      NULL },
+    { "SDL_Gawk_UpdateColorPalette", do_SDL_Gawk_UpdateColorPalette,
+      6, 6,
+      awk_false,
+      NULL },
+    { "SDL_AllocPalette", do_SDL_AllocPalette, 1, 1, awk_false, NULL },
+    { "SDL_FreePalette", do_SDL_FreePalette, 1, 1, awk_false, NULL },
     { "SDL_SetPaletteColors", do_SDL_SetPaletteColors,
       4, 4,
       awk_false,
       NULL },
+    { "SDL_AllocFormat", do_SDL_AllocFormat, 1, 1, awk_false, NULL },
+    { "SDL_FreeFormat", do_SDL_FreeFormat, 1, 1, awk_false, NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
       awk_false,
@@ -2371,7 +2991,8 @@ static awk_ext_func_t func_table[] = {
       6, 6,
       awk_false,
       NULL },
-    { "SDL_Gawk_CreateRect", do_SDL_Gawk_CreateRect, 0, 0, awk_false, NULL },
+    { "SDL_MapRGBA", do_SDL_MapRGBA, 5, 5, awk_false, NULL },
+    { "SDL_Gawk_AllocRect", do_SDL_Gawk_AllocRect, 0, 0, awk_false, NULL },
     { "SDL_Gawk_UpdateRect", do_SDL_Gawk_UpdateRect, 5, 5, awk_false, NULL },
     { "SDL_HasIntersection", do_SDL_HasIntersection, 2, 2, awk_false, NULL },
     { "SDL_BlitSurface", do_SDL_BlitSurface, 4, 4, awk_false, NULL },
@@ -2379,15 +3000,29 @@ static awk_ext_func_t func_table[] = {
       8, 8,
       awk_false,
       NULL },
+    { "SDL_CreateRGBSurfaceWithFormat", do_SDL_CreateRGBSurfaceWithFormat,
+      5, 5,
+      awk_false,
+      NULL },
+    { "SDL_FreeSurface", do_SDL_FreeSurface, 1, 1, awk_false, NULL },
+    { "SDL_Gawk_GetPixelColor", do_SDL_Gawk_GetPixelColor,
+      2, 2,
+      awk_false,
+      NULL },
+    { "SDL_Gawk_SetPixelColor", do_SDL_Gawk_SetPixelColor,
+      3, 3,
+      awk_false,
+      NULL },
     { "SDL_Gawk_SurfaceToArray", do_SDL_Gawk_SurfaceToArray,
       2, 2,
       awk_false,
       NULL },
-    { "SDL_FillRect", do_SDL_FillRect, 3, 3, awk_false, NULL },
-    { "SDL_Gawk_CreateEvent", do_SDL_Gawk_CreateEvent,
-      0, 0,
+    { "SDL_SetSurfacePalette", do_SDL_SetSurfacePalette,
+      2, 2,
       awk_false,
       NULL },
+    { "SDL_FillRect", do_SDL_FillRect, 3, 3, awk_false, NULL },
+    { "SDL_Gawk_AllocEvent", do_SDL_Gawk_AllocEvent, 0, 0, awk_false, NULL },
     { "SDL_Gawk_GetEventType", do_SDL_Gawk_GetEventType,
       1, 1,
       awk_false,
