@@ -1977,6 +1977,63 @@ do_SDL_FreeFormat(int nargs, awk_value_t *result, struct awk_ext_func *finfo)
     RETURN_OK;
 }
 
+/* void SDL_Gawk_PixelFormatEnumToArray(Uint32 format, awk_array_t *array); */
+// /* It doesn't exist in SDL2 */
+/* do_SDL_Gawk_PixelFormatEnumToArray --- provide a
+                                          SDL_Gawk_PixelFormatEnumToArray()
+                                          function for gawk */
+
+static awk_value_t *
+do_SDL_Gawk_PixelFormatEnumToArray(int nargs,
+                                   awk_value_t *result,
+                                   struct awk_ext_func *finfo)
+{
+    awk_value_t format_param;
+    awk_value_t array_param;
+    uint32_t format;
+    awk_array_t array;
+    int bpp;
+    uint32_t Rmask, Gmask, Bmask, Amask;
+    awk_value_t index, value;
+
+    if (! get_argument(0, AWK_NUMBER, &format_param)
+        || ! get_argument(1, AWK_ARRAY, &array_param)) {
+        warning(ext_id,
+                _("SDL_Gawk_PixelFormatEnumToArray: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    format = format_param.num_value;
+    array = array_param.array_cookie;
+
+    if (! SDL_PixelFormatEnumToMasks(format,
+                                     &bpp,
+                                     &Rmask, &Gmask, &Bmask, &Amask)) {
+        warning(ext_id,
+                _("SDL_Gawk_PixelFormatEnumToArray: unknown pixel format"));
+        RETURN_NOK;
+    }
+
+    clear_array(array);
+
+    set_array_element(array,
+                      make_const_string("bpp", 3, &index),
+                      make_number(bpp, &value));
+    set_array_element(array,
+                      make_const_string("Rmask", 5, &index),
+                      make_number(Rmask, &value));
+    set_array_element(array,
+                      make_const_string("Gmask", 5, &index),
+                      make_number(Gmask, &value));
+    set_array_element(array,
+                      make_const_string("Bmask", 5, &index),
+                      make_number(Bmask, &value));
+    set_array_element(array,
+                      make_const_string("Amask", 5, &index),
+                      make_number(Amask, &value));
+    RETURN_OK;
+}
+
 /* void SDL_Gawk_PixelFormatToArray(SDL_PixelFormat *fmt,
                                     awk_array_t *array); */
 // /* It doesn't exist in SDL2 */
@@ -2983,6 +3040,10 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "SDL_AllocFormat", do_SDL_AllocFormat, 1, 1, awk_false, NULL },
     { "SDL_FreeFormat", do_SDL_FreeFormat, 1, 1, awk_false, NULL },
+    { "SDL_Gawk_PixelFormatEnumToArray", do_SDL_Gawk_PixelFormatEnumToArray,
+      2, 2,
+      awk_false,
+      NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
       awk_false,
