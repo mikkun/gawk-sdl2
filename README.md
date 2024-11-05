@@ -92,6 +92,7 @@ See `examples/*.awk` for usage.
 - `SDL_Gawk_GetEventType`
 - `SDL_Gawk_GetKeyboardState`
 - `SDL_Gawk_GetPixelColor`
+- `SDL_Gawk_PixelFormatEnumToArray`
 - `SDL_Gawk_PixelFormatToArray`
 - `SDL_Gawk_SetPixelColor`
 - `SDL_Gawk_SurfaceToArray`
