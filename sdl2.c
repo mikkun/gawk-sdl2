@@ -2105,59 +2105,6 @@ do_SDL_Gawk_PixelFormatToArray(int nargs,
     RETURN_OK;
 }
 
-/* SDL_bool SDL_PixelFormatEnumToMasks(Uint32 format,
-                                       int *bpp,
-                                       Uint32 *Rmask,
-                                       Uint32 *Gmask,
-                                       Uint32 *Bmask,
-                                       Uint32 *Amask); */
-/* do_SDL_PixelFormatEnumToMasks --- provide a SDL_PixelFormatEnumToMasks()
-                                     function for gawk */
-
-static awk_value_t *
-do_SDL_PixelFormatEnumToMasks(int nargs,
-                              awk_value_t *result,
-                              struct awk_ext_func *finfo)
-{
-    awk_value_t format_param;
-    awk_value_t bpp_ptr_param;
-    awk_value_t Rmask_ptr_param;
-    awk_value_t Gmask_ptr_param;
-    awk_value_t Bmask_ptr_param;
-    awk_value_t Amask_ptr_param;
-    uint32_t format;
-    uintptr_t bpp_ptr;
-    uintptr_t Rmask_ptr;
-    uintptr_t Gmask_ptr;
-    uintptr_t Bmask_ptr;
-    uintptr_t Amask_ptr;
-
-    if (! get_argument(0, AWK_NUMBER, &format_param)
-        || ! get_argument(1, AWK_STRING, &bpp_ptr_param)
-        || ! get_argument(2, AWK_STRING, &Rmask_ptr_param)
-        || ! get_argument(3, AWK_STRING, &Gmask_ptr_param)
-        || ! get_argument(4, AWK_STRING, &Bmask_ptr_param)
-        || ! get_argument(5, AWK_STRING, &Amask_ptr_param)) {
-        warning(ext_id, _("SDL_PixelFormatEnumToMasks: bad parameter(s)"));
-        RETURN_NOK;
-    }
-
-    format = format_param.num_value;
-    bpp_ptr = strtoull(bpp_ptr_param.str_value.str, (char **)NULL, 16);
-    Rmask_ptr = strtoull(Rmask_ptr_param.str_value.str, (char **)NULL, 16);
-    Gmask_ptr = strtoull(Gmask_ptr_param.str_value.str, (char **)NULL, 16);
-    Bmask_ptr = strtoull(Bmask_ptr_param.str_value.str, (char **)NULL, 16);
-    Amask_ptr = strtoull(Amask_ptr_param.str_value.str, (char **)NULL, 16);
-
-    return make_number(SDL_PixelFormatEnumToMasks(format,
-                                                  (int *)bpp_ptr,
-                                                  (uint32_t *)Rmask_ptr,
-                                                  (uint32_t *)Gmask_ptr,
-                                                  (uint32_t *)Bmask_ptr,
-                                                  (uint32_t *)Amask_ptr),
-                       result);
-}
-
 /* Uint32 SDL_MapRGBA(const SDL_PixelFormat *format,
                       Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
 /* do_SDL_MapRGBA --- provide a SDL_MapRGBA() function for gawk */
@@ -3046,10 +2993,6 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
-      awk_false,
-      NULL },
-    { "SDL_PixelFormatEnumToMasks", do_SDL_PixelFormatEnumToMasks,
-      6, 6,
       awk_false,
       NULL },
     { "SDL_MapRGBA", do_SDL_MapRGBA, 5, 5, awk_false, NULL },
