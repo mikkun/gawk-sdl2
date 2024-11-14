@@ -2105,6 +2105,44 @@ do_SDL_Gawk_PixelFormatToArray(int nargs,
     RETURN_OK;
 }
 
+/* Uint32 SDL_MasksToPixelFormatEnum(int bpp,
+                                     Uint32 Rmask,
+                                     Uint32 Gmask,
+                                     Uint32 Bmask,
+                                     Uint32 Amask); */
+/* do_SDL_MasksToPixelFormatEnum --- provide a SDL_MasksToPixelFormatEnum()
+                                     function for gawk */
+
+static awk_value_t *
+do_SDL_MasksToPixelFormatEnum(int nargs,
+                              awk_value_t *result,
+                              struct awk_ext_func *finfo)
+{
+    awk_value_t bpp_param;
+    awk_value_t Rmask_param, Gmask_param, Bmask_param, Amask_param;
+    int bpp;
+    uint32_t Rmask, Gmask, Bmask, Amask;
+    uint32_t format;
+
+    if (! get_argument(0, AWK_NUMBER, &bpp_param)
+        || ! get_argument(1, AWK_NUMBER, &Rmask_param)
+        || ! get_argument(2, AWK_NUMBER, &Gmask_param)
+        || ! get_argument(3, AWK_NUMBER, &Bmask_param)
+        || ! get_argument(4, AWK_NUMBER, &Amask_param)) {
+        warning(ext_id, _("SDL_MasksToPixelFormatEnum: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    bpp = bpp_param.num_value;
+    Rmask = Rmask_param.num_value;
+    Gmask = Gmask_param.num_value;
+    Bmask = Bmask_param.num_value;
+    Amask = Amask_param.num_value;
+
+    format = SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+    return make_number(format, result);
+}
+
 /* Uint32 SDL_MapRGBA(const SDL_PixelFormat *format,
                       Uint8 r, Uint8 g, Uint8 b, Uint8 a); */
 /* do_SDL_MapRGBA --- provide a SDL_MapRGBA() function for gawk */
@@ -2993,6 +3031,10 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
+      awk_false,
+      NULL },
+    { "SDL_MasksToPixelFormatEnum", do_SDL_MasksToPixelFormatEnum,
+      5, 5,
       awk_false,
       NULL },
     { "SDL_MapRGBA", do_SDL_MapRGBA, 5, 5, awk_false, NULL },
