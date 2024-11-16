@@ -99,6 +99,7 @@ See `examples/*.awk` for usage.
 - `SDL_Gawk_UpdateColorPalette`
 - `SDL_Gawk_UpdateRect`
 - `SDL_GetError`
+- `SDL_GetPixelFormatName`
 - `SDL_GetTicks`
 - `SDL_GetWindowPixelFormat`
 - `SDL_GetWindowSurface`
@@ -106,7 +107,7 @@ See `examples/*.awk` for usage.
 - `SDL_Init`
 - `SDL_InitSubSystem`
 - `SDL_MapRGBA`
-- `SDL_PixelFormatEnumToMasks`
+- `SDL_MasksToPixelFormatEnum`
 - `SDL_PollEvent`
 - `SDL_Quit`
 - `SDL_QuitSubSystem`
