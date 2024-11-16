@@ -2105,6 +2105,35 @@ do_SDL_Gawk_PixelFormatToArray(int nargs,
     RETURN_OK;
 }
 
+/* const char *SDL_GetPixelFormatName(Uint32 format); */
+/* do_SDL_GetPixelFormatName --- provide a SDL_GetPixelFormatName()
+                                 function for gawk */
+
+static awk_value_t *
+do_SDL_GetPixelFormatName(int nargs,
+                          awk_value_t *result,
+                          struct awk_ext_func *finfo)
+{
+    awk_value_t format_param;
+    uint32_t format;
+    const char *format_name;
+
+    if (! get_argument(0, AWK_NUMBER, &format_param)) {
+        warning(ext_id, _("SDL_GetPixelFormatName: bad parameter(s)"));
+        RETURN_NOK;
+    }
+
+    format = format_param.num_value;
+
+    format_name = SDL_GetPixelFormatName(format);
+
+    if (format_name)
+        return make_string_malloc(format_name, strlen(format_name), result);
+
+    update_ERRNO_string(_("SDL_GetPixelFormatName failed"));
+    return make_null_string(result);
+}
+
 /* Uint32 SDL_MasksToPixelFormatEnum(int bpp,
                                      Uint32 Rmask,
                                      Uint32 Gmask,
@@ -3031,6 +3060,10 @@ static awk_ext_func_t func_table[] = {
       NULL },
     { "SDL_Gawk_PixelFormatToArray", do_SDL_Gawk_PixelFormatToArray,
       2, 2,
+      awk_false,
+      NULL },
+    { "SDL_GetPixelFormatName", do_SDL_GetPixelFormatName,
+      1, 1,
       awk_false,
       NULL },
     { "SDL_MasksToPixelFormatEnum", do_SDL_MasksToPixelFormatEnum,
